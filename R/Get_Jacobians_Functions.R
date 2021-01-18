@@ -1,14 +1,14 @@
-#contains functions that are used to calculate Jacobian matrices from raw data
+#contains functions that are used to calculate Jacobian matrices
+#by calculating interaction strengths from species-contact matrices and abundances
 
 
 #' Reads in the raw data files and returns data frames that are more easy to work with in R.
 #' Competition and abundance data must be read in together, to make sure the species match.
-#' Competition and abundance data must be read in together, to make sure the species match.
 #'
 #' @param path_competition path to species contact matrix .csv file
-#' @param path_abundance path to abundance file .csv file
+#' @param path_abundance path to abundance .csv file
 #' @return A list containing a competition data frame, that contains the
-#' species contact matrix and the cleaned abundance table (missing species are omitted +
+#' species contact matrix and acleaned abundance table (missing species are omitted +
 #' same order as competition table)
 #'
 read_data <- function(path_competition, path_abundance){
@@ -19,7 +19,7 @@ read_data <- function(path_competition, path_abundance){
   competition[,1] <- NULL
 
   #load abundance csv file
-  abundance <- read.csv(path_abundance, header = FALSE)
+  abundance <- read.csv(path_abundance)
   #drop rows that contain no data
   abundance <- na.omit(abundance)
 
@@ -66,7 +66,18 @@ read_data <- function(path_competition, path_abundance){
   return(list(competition, abundance_new))
 }
 
-
+#'  Calculates interaction strengths from species-contact matrix (competition dataframe)
+#'  and abundance data. In a first step, the species-contact matrix is turned into a tabular
+#'  format with one row per pairwise interaction in order to make computations easier. Then,
+#'  biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
+#'  converted to interaction strengths by diving them by the respective species' abundance.
+#'
+#'  @param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
+#'  @param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
+#'  @param cost_list a list with three entries containing [win_cost, loss_cost, draw_cost]
+#'
+#'  @return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
+#'
 interaction_strengths <- function(competition, abundance, cost_list){
   #calculates interaction strengths from competition and abundance data frames
 
