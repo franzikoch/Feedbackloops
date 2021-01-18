@@ -3,7 +3,11 @@
 
 
 #' Reads in the raw data files and returns data frames that are more easy to work with in R.
-#' Competition and abundance data must be read in together, to make sure the species match.
+#'
+#'
+#' Competition and abundance data must be read in together, to make sure that species match.
+#' (in Daves raw data tables, the abundance data sometimes contains species that are not in
+#' the species contact matrix)
 #'
 #' @param path_competition path to species contact matrix .csv file
 #' @param path_abundance path to abundance .csv file
@@ -67,7 +71,9 @@ read_data <- function(path_competition, path_abundance){
 }
 
 #'  Calculates interaction strengths from species-contact matrix (competition dataframe)
-#'  and abundance data. In a first step, the species-contact matrix is turned into a tabular
+#'  and abundance data.
+#'
+#'  In a first step, the species-contact matrix is turned into a tabular
 #'  format with one row per pairwise interaction in order to make computations easier. Then,
 #'  biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
 #'  converted to interaction strengths by diving them by the respective species' abundance.
@@ -175,7 +181,17 @@ interaction_strengths <- function(competition, abundance, cost_list){
   return(df)
 }
 
-
+#' Constructs a community matrix from the data.frame created by the interaction_strengths function
+#'
+#' To do this, the list of species names from the abundace table is used to name the rows and columns
+#' of the community matrix. The corresponding interaction strengths are picked from the dataframe, based on
+#' the species name.
+#'
+#' @param df the dataframe created by the interaction strengths function
+#' @param species_list list of species names in the community, can be taken from the abundance table
+#'
+#' @return The community matrix (so far as a data.frame)
+#'
 assemble_jacobian <- function(df, species_list){
   ##To form the Jacobian matrix, we need to reassemble the interactions strengths
   ##in df back into a matrix format
