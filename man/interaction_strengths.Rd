@@ -3,18 +3,22 @@
 \name{interaction_strengths}
 \alias{interaction_strengths}
 \title{Calculates interaction strengths from species-contact matrix (competition dataframe)
- and abundance data. In a first step, the species-contact matrix is turned into a tabular
- format with one row per pairwise interaction in order to make computations easier. Then,
- biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
- converted to interaction strengths by diving them by the respective species' abundance.}
+and abundance data.}
 \usage{
 interaction_strengths(competition, abundance, cost_list)
 }
 \description{
-@param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
- @param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
- @param cost_list a list with three entries containing [win_cost, loss_cost, draw_cost]
+In a first step, the species-contact matrix is turned into a tabular
+format with one row per pairwise interaction in order to make computations easier. Then,
+biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
+converted to interaction strengths by diving them by the respective species' abundance.
 }
 \details{
+@param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
+@param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
+@param cost_list a list with three entries containing \link{win_cost, loss_cost, draw_cost}
+
 @return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
+
+@export
 }

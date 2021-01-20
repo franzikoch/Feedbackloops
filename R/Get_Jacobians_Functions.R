@@ -15,6 +15,7 @@
 #' species contact matrix and acleaned abundance table (missing species are omitted +
 #' same order as competition table)
 #'
+#'@export
 read_data <- function(path_competition, path_abundance){
 
   #load competition csv file
@@ -22,8 +23,8 @@ read_data <- function(path_competition, path_abundance){
   #column 1 can be removed bc we dont need the species names here
   competition[,1] <- NULL
 
-  #load abundance csv file
-  abundance <- read.csv(path_abundance)
+  #load abundance csv file, (file has no header line therefore FALSE)
+  abundance <- read.csv(path_abundance, header = FALSE)
   #drop rows that contain no data
   abundance <- na.omit(abundance)
 
@@ -84,6 +85,7 @@ read_data <- function(path_competition, path_abundance){
 #'
 #'  @return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
 #'
+#'  @export
 interaction_strengths <- function(competition, abundance, cost_list){
   #calculates interaction strengths from competition and abundance data frames
 
@@ -147,7 +149,7 @@ interaction_strengths <- function(competition, abundance, cost_list){
   loss_cost = cost_list[2]
   draw_cost = cost_list[3]
 
-  #initialize vectors to save interactions strengts
+  #initialize vectors to save interactions strengths
   n = dim(df)[1] #number of confrontations
   F_ii <- vector("numeric", length = n)
   F_ii_B <- vector("numeric", length = n)
@@ -192,6 +194,7 @@ interaction_strengths <- function(competition, abundance, cost_list){
 #'
 #' @return The community matrix (so far as a data.frame)
 #'
+#' @export 
 assemble_jacobian <- function(df, species_list){
   ##To form the Jacobian matrix, we need to reassemble the interactions strengths
   ##in df back into a matrix format
