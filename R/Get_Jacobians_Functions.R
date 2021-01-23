@@ -77,7 +77,7 @@ read_data <- function(path_competition, path_abundance){
 #'  In a first step, the species-contact matrix is turned into a tabular
 #'  format with one row per pairwise interaction in order to make computations easier. Then,
 #'  biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
-#'  converted to interaction strengths by diving them by the respective species' abundance.
+#'  converted to interaction strengths by dividing them by the respective species' abundance.
 #'
 #'  @param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
 #'  @param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
@@ -195,37 +195,40 @@ interaction_strengths <- function(competition, abundance, cost_list){
 #' @return The community matrix (so far as a data.frame)
 #'
 #' @export 
-assemble_jacobian <- function(df, species_list){
-  ##To form the Jacobian matrix, we need to reassemble the interactions strengths
-  ##in df back into a matrix format
-
-  ##prepare a dataframe to fill:
-  n <- length(species_list)
-  Jacobian<- as.data.frame(matrix(nrow = n, ncol = n), stringsAsFactors = FALSE)
-  rownames(Jacobian)<- species_list
-  colnames(Jacobian)<- species_list
-
-  for (i in 1:n){#loops through the rows of the matrix
-    row_species <- species_list[i]
-    for (j in 1:n){#loops through the columns of the matrix
-      column_species <- species_list[j]
-      #select row in df with the corresponding species_i and species_j
-      r<- df[(df$Species_i == row_species & df$Species_j == column_species),]
-      #check if r contains data (if not, the two species did not interact)
-      if (nrow(r) > 0){
-        if (i == j){ #when on the diagonal, use intraspecific coefficient
-          Jacobian[i,j] <- r$F_ii_B
-        }else{ #when we're not on the diagonal, use interspecific ones
-          #F_ij_B values can be used to fill the matrix above the diagonal
-          Jacobian[i,j] <- r$F_ij_B
-          #F_ji_B values can be used to fill the matrix below the diagonal
-          Jacobian[j,i]<- r$F_ji_B
-        }
-      }
-    }
-  }
-  #turn NAs into zeros
-  Jacobian[is.na(Jacobian)]<-0
+#' 
+#' 
+assemble_jacobian <- function(interaction_table, species_list){
+  
+  n <- length(species_list) #length of species list gives us the matrix size
+  
+  Jacobian <- matrix(0, nrow = n, ncol = n) #intialise a matrix in the correct size,
+  #filled with zeros
+  
+  #create a named vector to match the location with species names
+  location= 1:n
+  names(location) <- species_list
+  
+  #iterate over the rows of the data frame
+  for (i in seq_along(interaction_table[,1])){
+    
+    row <- interaction_table[i,] #pick the current row
+    
+    #find their location in the species list
+    index_i <- location[[row$Species_i]]
+    index_j <- location[[row$Species_j]]
+    
+    if (index_i == index_j){#for intraspecific interactions
+      
+      Jacobian[index_i, index_j] <- row[['F_ii_B']] #fill F_ii value into the matrix
+      
+    }else{ #for interspecific interactions
+      
+      Jacobian[index_i, index_j] <- row[['F_ij_B']] #fill F_ij value into the matrix
+      
+      Jacobian[index_j, index_i] <- row[['F_ji_B']] #fill F_ji value into the matrix
+      
+    }#end if condition
+  }#end for-loop
+  
   return(Jacobian)
-}
-
+}#end of function
