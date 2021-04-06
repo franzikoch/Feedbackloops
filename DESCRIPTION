@@ -1,5 +1,5 @@
 Package: Feedbackloops
-Title: feedback loop analysis for ecological network
+Title: Feedback loop analysis for ecological networks
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Franzi",

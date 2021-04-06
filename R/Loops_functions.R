@@ -4,7 +4,7 @@
 #' Calculates the loop strength and weight of a given feedback loop
 #' 
 #' A loop is defined by a list of species e.g. c(1,2,3) is the 3-link loop 1 -> 2 -> 3
-#' these species numbers are used as indiced in order to pick the corresponding 
+#' these species numbers are used as indices in order to pick the corresponding 
 #' interaction strengths from the Jacobian A
 #' 
 #' @param loop a vector containing the species that are in the loop, e.g. c(1,2,3) 
@@ -12,6 +12,7 @@
 #' @param A a Jacobian matrix
 #' 
 #' @return a vector containing the loop strength and the loop weight 
+#' 
 loop_weight <- function(loop, A){
   #returns the strength and weights of a single loops (given by the species sequence loop)
   l = length(loop) #length of the loop
@@ -37,15 +38,27 @@ loop_weight <- function(loop, A){
   return(c(strength, weight))
 }
 
-
+#'Calculates the strengths and weights of all loops of length n within the matrix A 
+#'
+#'To do this, I simply assume that all possible loops of length n (all possible combinations of n-species) exist. 
+#'Then, the function goes through all possible loops and calculates their strengths using loop_weights()
+#'If the loop weight is 0, at least one of the links is missing and the loop is removed from the list.
+#'
+#'@param n loop length
+#'@param A a Jacobian matrix in which all loops of length should be identified
+#'
+#'@return A list containing the strengths and weights of all loops of length n within A 
+#'
 loops <- function(n, A){
-  #calculates the strengths and weights of all loops of length n within the matrix A
+  
   N <- nrow(A)  #number of species in the community 
+  
   #combn returns a list of all unique n-species subsets of the network
   comb <- combn(c(1:N), n, simplify = FALSE)
   
   #prepare lists to store loop weights and strengths 
   #(we know that there are twice as many possible loops as subsets in the list )
+  #unless its 2-link loops -> maybe put in an if-condition here?
   loop_number = length(comb)*2
   strengths = vector('numeric', length = loop_number)
   weights = vector('numeric', length = loop_number)

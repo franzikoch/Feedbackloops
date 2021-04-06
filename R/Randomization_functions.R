@@ -150,9 +150,11 @@ randomize_pw2 <- function(df){
 
 #' Constructs a Jacobian matrix with randomised interaction strengths
 #' 
+#' This is not needed anymore! assemble_jacobian now works with randomised dataframes as well!!
+#' 
 #' @param df interaction table, containing columns with randomised interaction strengths
 #' @param species_list list of species names (can be taken from abundance table)
-#' @column column name specifying which columns of interaction strengths should be used to assemble the matrix
+#' @param column name specifying which columns of interaction strengths should be used to assemble the matrix
 #' 
 #' @return a Jacobian matrix 
 
