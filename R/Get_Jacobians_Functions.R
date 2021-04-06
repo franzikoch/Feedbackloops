@@ -185,19 +185,21 @@ interaction_strengths <- function(competition, abundance, cost_list){
 
 #' Constructs a community matrix from the data.frame created by the interaction_strengths function
 #'
-#' To do this, the list of species names from the abundace table is used to name the rows and columns
+#' To do this, the list of species names from the abundance table is used to name the rows and columns
 #' of the community matrix. The corresponding interaction strengths are picked from the dataframe, based on
 #' the species name.
 #'
 #' @param df the dataframe created by the interaction strengths function
 #' @param species_list list of species names in the community, can be taken from the abundance table
+#' @param ij_col name of the column that contains effects of species i on species j
+#' @param ji_col name of the column that contains effects of species j on species j 
 #'
 #' @return The community matrix (so far as a data.frame)
 #'
 #' @export 
 #' 
 #' 
-assemble_jacobian <- function(interaction_table, species_list){
+assemble_jacobian <- function(interaction_table, species_list, ij_col, ji_col){
   
   n <- length(species_list) #length of species list gives us the matrix size
   
@@ -213,19 +215,22 @@ assemble_jacobian <- function(interaction_table, species_list){
     
     row <- interaction_table[i,] #pick the current row
     
-    #find their location in the species list
+    #finde their location in the species list
     index_i <- location[[row$Species_i]]
     index_j <- location[[row$Species_j]]
     
     if (index_i == index_j){#for intraspecific interactions
       
+      #digaonal values are not affected by randomisations, so the same column does not change
       Jacobian[index_i, index_j] <- row[['F_ii_B']] #fill F_ii value into the matrix
       
     }else{ #for interspecific interactions
       
-      Jacobian[index_i, index_j] <- row[['F_ij_B']] #fill F_ij value into the matrix
+      #which column is used to pick values from depends on randomisation type
       
-      Jacobian[index_j, index_i] <- row[['F_ji_B']] #fill F_ji value into the matrix
+      Jacobian[index_i, index_j] <- row[[ij_col]] #fill F_ij value into the matrix
+      
+      Jacobian[index_j, index_i] <- row[[ji_col]] #fill F_ji value into the matrix
       
     }#end if condition
   }#end for-loop
