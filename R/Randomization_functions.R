@@ -148,6 +148,14 @@ randomize_pw2 <- function(df){
 }
 
 
+#' Constructs a Jacobian matrix with randomised interaction strengths
+#' 
+#' @param df interaction table, containing columns with randomised interaction strengths
+#' @param species_list list of species names (can be taken from abundance table)
+#' @column column name specifying which columns of interaction strengths should be used to assemble the matrix
+#' 
+#' @return a Jacobian matrix 
+
 assemble_jacobian_randomized <- function(df, species_list, column){
   
   ##Used to generate a randomized version of the Jacobian matrix 
@@ -197,105 +205,10 @@ assemble_jacobian_randomized <- function(df, species_list, column){
   return(Jacobian)
 }
 
-#functioons to calculate loop weights and strengths
-
-loop_weight <- function(loop, A){
-  #returns the strength and weights of a single loops (given by the species sequence loop)
-  l = length(loop) #length of the loop
-  
-  #select the right coefficients from the matrix A 
-  #first species -> index of the row we need 
-  #second species -> index of the column we need 
-  
-  coefficients <- vector('numeric', length = l)
-  
-  row_indices <- loop
-  col_indices <- c(loop[2:l], loop[1])
-  
-  for (i in 1:l){
-    coefficients[i] <- A[row_indices[i], col_indices[i]]
-  }
-  
-  #calculate loop strength and loop weight
-  #loop strength = absolute product of all coefficients 
-  strength = abs(prod(coefficients))
-  weight = strength^(1/l)
-  
-  return(c(strength, weight))
-}
 
 
-loops <- function(n, A){
-  #calculates the strengths and weights of all loops of length n within the matrix A
-  N <- nrow(A)  #number of species in the community 
-  #combn returns a list of all unique n-species subsets of the network
-  comb <- combn(c(1:N), n, simplify = FALSE)
-  
-  #prepare lists to store loop weights and strengths 
-  #(we know that there are twice as many possible loops as subsets in the list )
-  loop_number = length(comb)*2
-  strengths = vector('numeric', length = loop_number)
-  weights = vector('numeric', length = loop_number)
-  
-  index = 1 #used to index l3_strengths and l3_weights
-  
-  for (i in comb){
-    #first loop -> right order
-    l1 <- loop_weight(i, A)
-    
-    #store the values in the lists prepared above
-    strengths[index] <- l1[1]
-    weights[index] <- l1[2]
-    index = index + 1
-    
-    #same for the second loop -> same species but in reversed order
-    l2 <- loop_weight(rev(i), A)
-    strengths[index] <- l2[1]
-    weights[index] <- l2[2]
-    
-    index = index+1
-  }
-  
-  #loops that have a weight of zero do not exist because one(or more) of their links is 0
-  #remove them from the list
-  strengths <-strengths[strengths > 0]
-  weights <- weights[weights > 0]
-  
-  #return the list of loop strengths and weights 
-  return(list(strengths, weights))
-}
 
 
-find_s <- function(Jacobian, step_size = 0.01, max_s = 1000){
-  
-  original_diagonal = diag(Jacobian)
-  s = 0
-  while(TRUE){ #the loop increases s until lambda_d becomes negative
-    
-    #set diagonal to original diagonal values multiplied with s
-    diag(Jacobian) <- original_diagonal * s
-    #calculate lambda_d again
-    lambda_d <- eigen(Jacobian)$values %>% Re() %>% max()
-    
-    #if it is negative , the loop can be stopped
-    if (lambda_d < 0){
-      return(s)
-      break
-    }
-    #if the system is not stable yet, increase s and repeat 
-    s = s+step_size
-    
-    if (s > max_s){
-      return(NA)
-      break
-    }#end if 
-  }#end while
-}#end function
 
-#define a function to get the names from one of the path lists
-get_names <- function(path_list, string){
-  n = length(path_list)
-  names <- unlist(strsplit(path_list, string))[seq(2,n*2,2)]
-  names_sans <- file_path_sans_ext(names)
-  return(list(names, names_sans))
-}
+
+
