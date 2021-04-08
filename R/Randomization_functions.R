@@ -18,6 +18,7 @@
 #' 
 #' @return the same interaction table but with two additional columns $ F_ij_B_rand 
 #' and $F_ji_B_rand that contain the same interaction strengths in a randomised order
+#' @export
 
 randomize_all <- function(df){
   ###Implements full randomization of all interaction strenghts
@@ -64,6 +65,8 @@ randomize_all <- function(df){
 #' 
 #' @return the same interaction table with additional columns $F_ij_B_pw and $F_ji_B_pw, 
 #' containing randomised interaction strengths
+#' 
+#' @export
 #' 
 randomize_pw <- function(df){
   ###Implements pairwise randomizations of interaction strengths in df 
@@ -112,6 +115,7 @@ randomize_pw <- function(df){
 #' @return the same interaction table but with two additional columns $F_ij_B_pw2 
 #' and $F_ji_B_pw2, that contain randomised interaction strengths
 #' 
+#' @export
 randomize_pw2 <- function(df){
   ###Implements pairwise randomizations of interaction strengths in df 
   

@@ -3,6 +3,8 @@
 #'
 #'@param path_list List of paths to csv files (one for each dataset)
 #'@param string The parts of the file name that doesn't belong to the name, e.g. "abundance_cleaned"
+#'
+#'@export
 
 get_names <- function(path_list, string){
   #split into two function? -> get_names and get_names_sans

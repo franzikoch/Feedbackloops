@@ -86,6 +86,7 @@ read_data <- function(path_competition, path_abundance){
 #'  @return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
 #'
 #'  @export
+#'  
 interaction_strengths <- function(competition, abundance, cost_list){
   #calculates interaction strengths from competition and abundance data frames
 
