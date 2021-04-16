@@ -13,7 +13,7 @@ read_data(path_competition, path_abundance)
 }
 \value{
 A list containing a competition data frame, that contains the
-species contact matrix and acleaned abundance table (missing species are omitted +
+species contact matrix and a cleaned abundance table (missing species are omitted +
 same order as competition table)
 }
 \description{

@@ -4,18 +4,22 @@
 \alias{assemble_jacobian}
 \title{Constructs a community matrix from the data.frame created by the interaction_strengths function}
 \usage{
-assemble_jacobian(df, species_list)
+assemble_jacobian(interaction_table, species_list, ij_col, ji_col)
 }
 \arguments{
-\item{df}{the dataframe created by the interaction strengths function}
+\item{interaction_table}{the dataframe created by the interaction strengths function}
 
 \item{species_list}{list of species names in the community, can be taken from the abundance table}
+
+\item{ij_col}{name of the column that contains effects of species i on species j}
+
+\item{ji_col}{name of the column that contains effects of species j on species j}
 }
 \value{
-The community matrix (so far as a data.frame)
+The community matrix
 }
 \description{
-To do this, the list of species names from the abundace table is used to name the rows and columns
+To do this, the list of species names from the abundance table is used to name the rows and columns
 of the community matrix. The corresponding interaction strengths are picked from the dataframe, based on
 the species name.
 }

@@ -2,23 +2,23 @@
 % Please edit documentation in R/Get_Jacobians_Functions.R
 \name{interaction_strengths}
 \alias{interaction_strengths}
-\title{Calculates interaction strengths from species-contact matrix (competition dataframe)
-and abundance data.}
+\title{Calculates interaction_strengths from species_contact matrix}
 \usage{
 interaction_strengths(competition, abundance, cost_list)
+}
+\arguments{
+\item{competition}{species-contact matrix}
+
+\item{abundance}{abundance table}
+
+\item{cost_list}{list containing win_cost, loss_cost, draw_cost}
+}
+\value{
+table containing biomass loss rates and interaction strenghts
 }
 \description{
 In a first step, the species-contact matrix is turned into a tabular
 format with one row per pairwise interaction in order to make computations easier. Then,
 biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
 converted to interaction strengths by diving them by the respective species' abundance.
-}
-\details{
-@param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
-@param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
-@param cost_list a list with three entries containing \link{win_cost, loss_cost, draw_cost}
-
-@return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
-
-@export
 }
