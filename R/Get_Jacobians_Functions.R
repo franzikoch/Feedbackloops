@@ -11,22 +11,23 @@
 #'
 #' @param path_competition path to species contact matrix .csv file
 #' @param path_abundance path to abundance .csv file
+#' 
 #' @return A list containing a competition data frame, that contains the
-#' species contact matrix and acleaned abundance table (missing species are omitted +
+#' species contact matrix and a cleaned abundance table (missing species are omitted +
 #' same order as competition table)
 #'
 #'@export
 read_data <- function(path_competition, path_abundance){
 
   #load competition csv file
-  competition <- read.csv(path_competition)
+  competition <- utils::read.csv(path_competition)
   #column 1 can be removed bc we dont need the species names here
   competition[,1] <- NULL
 
   #load abundance csv file, (file has no header line therefore FALSE)
-  abundance <- read.csv(path_abundance, header = FALSE)
+  abundance <- utils::read.csv(path_abundance, header = FALSE)
   #drop rows that contain no data
-  abundance <- na.omit(abundance)
+  abundance <- stats::na.omit(abundance)
 
   #check whether the dataset is from Spitzbergen or from another side
   #Spitzbergen data sets have slightly different formats so they must be treated differently
@@ -71,22 +72,22 @@ read_data <- function(path_competition, path_abundance){
   return(list(competition, abundance_new))
 }
 
-#'  Calculates interaction strengths from species-contact matrix (competition dataframe)
-#'  and abundance data.
+#' Calculates interaction_strengths from species_contact matrix
 #'
-#'  In a first step, the species-contact matrix is turned into a tabular
-#'  format with one row per pairwise interaction in order to make computations easier. Then,
-#'  biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
-#'  converted to interaction strengths by dividing them by the respective species' abundance.
+#' In a first step, the species-contact matrix is turned into a tabular
+#' format with one row per pairwise interaction in order to make computations easier. Then,
+#' biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
+#' converted to interaction strengths by diving them by the respective species' abundance.
+#' @param competition species-contact matrix
+#' @param abundance abundance table
+#' @param cost_list list containing win_cost, loss_cost, draw_cost
 #'
-#'  @param competition species-contact matrix as a data.frame, must be formatted correctly with the read_data function
-#'  @param abundance abundance table as a data.frame, must be formatted correctly with the read_data function
-#'  @param cost_list a list with three entries containing [win_cost, loss_cost, draw_cost]
 #'
-#'  @return A dataframe with one row per pairwise interaction, containing biomass loss rates and interaction strengths
+#' @return table containing biomass loss rates and interaction strenghts
 #'
-#'  @export
-#'  
+#' @export 
+#' 
+#' 
 interaction_strengths <- function(competition, abundance, cost_list){
   #calculates interaction strengths from competition and abundance data frames
 
@@ -133,7 +134,7 @@ interaction_strengths <- function(competition, abundance, cost_list){
   }
 
   #remove empty rows from df
-  df <- na.omit(df)
+  df <- stats::na.omit(df)
 
 
   #PART2 #############################################################
@@ -190,12 +191,12 @@ interaction_strengths <- function(competition, abundance, cost_list){
 #' of the community matrix. The corresponding interaction strengths are picked from the dataframe, based on
 #' the species name.
 #'
-#' @param df the dataframe created by the interaction strengths function
+#' @param interaction_table the dataframe created by the interaction strengths function
 #' @param species_list list of species names in the community, can be taken from the abundance table
 #' @param ij_col name of the column that contains effects of species i on species j
 #' @param ji_col name of the column that contains effects of species j on species j 
 #'
-#' @return The community matrix (so far as a data.frame)
+#' @return The community matrix 
 #'
 #' @export 
 #' 

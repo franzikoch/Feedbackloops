@@ -54,7 +54,7 @@ loops <- function(n, A){
   N <- nrow(A)  #number of species in the community 
   
   #combn returns a list of all unique n-species subsets of the network
-  comb <- combn(c(1:N), n, simplify = FALSE)
+  comb <- utils::combn(c(1:N), n, simplify = FALSE)
   
   #prepare lists to store loop weights and strengths 
   #(we know that there are twice as many possible loops as subsets in the list )
