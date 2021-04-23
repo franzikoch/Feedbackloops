@@ -1,0 +1,54 @@
+---
+title: "From empirical data to Jacobian matrices"
+author: "Franzi Koch"
+
+output: rmarkdown::html_vignette
+
+vignette: >
+  %\VignetteIndexEntry{Get_Jacobians}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(Feedbackloops)
+```
+
+Estimating interaction strengths from empirical data requires the following steps:
+
+1. Read in the raw data files (species-contact matrix and abundance table). 
+1. Convert the species-contact matrix to a tabular format that contains one row for each pair of competitors
+1. Calculation of biomass loss rates and interaction strengths using the table created in the previous step and the abundances of each species (measured in colonies per species).
+1. Assembling the Jacobian matrices by putting each interaction strength into its correct position within the Jacobian. 
+
+### Reading in the raw data files
+
+For each Jacobian, two data files are needed: 
+
+1. The **species-contact-matrix** csv file contains the wins/losses/draws/total interactions for each pair of interacting species. The first row contains species names and is used to name the columns of the table. Because the species contact matrix contains a 2 x 2 block of cells for each interaction, each species name is always repeated twice (both in the rows and in the columns). 
+1. The **abundance** csv file contains a table with two columns: species name and coresponding number of colonies per species. 
+
+Use the function **read_data(path_to_species_contact_matrix, path_to_abundance_table)** to read in the raw data files (only works if they have the exact format specified above!). The function returns a list with two elements: The first is a data.frame containing the species contact matrix in the correct format to be processed further and the second is another data.frame containing the abundance table. The function removes species that appear in the abundance table but not in the species contact matrix. Also, it makes sure that species in the abundance table are ordered in the same way as in the species-contact-matrix (Important because Dave ordered his matrices according to competitive rank.)
+
+```{r}
+path_competition <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Competition_Rothera_1.csv"
+path_abundance <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Abundance_Rothera_1.csv"
+competition <- read_data(path_competition, path_abundance)[[1]]
+abundance <- read_data(path_competition, path_abundance)[[2]]
+```
+
+
+```{r}
+head(competition)
+```
+```{r}
+head(abundance)
+```
+
