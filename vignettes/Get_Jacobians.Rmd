@@ -28,7 +28,7 @@ Estimating interaction strengths from empirical data requires the following step
 1. Calculation of biomass loss rates and interaction strengths using the table created in the previous step and the abundances of each species (measured in colonies per species).
 1. Assembling the Jacobian matrices by putting each interaction strength into its correct position within the Jacobian. 
 
-### Reading in the raw data files
+## Reading in the raw data files
 
 For each Jacobian, two data files are needed: 
 
@@ -44,11 +44,44 @@ competition <- read_data(path_competition, path_abundance)[[1]]
 abundance <- read_data(path_competition, path_abundance)[[2]]
 ```
 
+The competition table/species-contact matrix should look like this: 
 
 ```{r}
 head(competition)
 ```
+
+and the abundance table like this: 
 ```{r}
 head(abundance)
+```
+## Create a table of pairwise interactions, calculate biomass loss rates and interaction strengths
+
+To make calculations easier, the function **interaction_strengths(competition_table, abundance_table, cost_list)** first converts the competition matrix to data.frame with one row for each pairwise interaction. In this format, the biomass loss rate of species $i$ due to competition with species $j$ can easily be calculated with the following formula: $F_{ij} = c_W W_{ij} + c_L L_{ij} + c_D D_{ij}$, where $W_{ij}$, $L_{ij}$ and $D_{ij}$ represent the number of wins, losses and ties for species $i$ in confrontation with species $j$ and $c_W$, $c_L$ and $c_D$ are the so-called cost-values. Cost-values are the fixed amount of lost biomass assigned to each type of competitive outcome. In the case of intraspecific interactions (species $i$ == species $j$), draws need to be counted twice, as such an interaction affects two colonies but only one confrontation is recorded in the species-contact matrix. For each row in the interaction table, two biomass loss rates ($F_{ij}$ and $F_{ji}$) are calculated. 
+
+To convert a given biomass loss rate $F_{ij}$ into interaction strengths (as in the element $a_{ij}$ of the Jacobian matrix), it is simply divided by the abundance $B$ of species $j$: $a_{ij} = \frac{F_{ij}{B_j}$. 
+
+The interaction table returned by **interaction_strengths()** contains biomass loss rates and interaction strengths for all those interactions. The cost values must be supplied in the cost list in the following order: $c_W$, $c_L$, $c_D$. 
+
+```{r}
+interaction_table <- interaction_strengths(competition, abundance, c(-0.1, -0.9, -0.2))
+head(interaction_table)
+```
+
+## Assembling the Jacobian matrix
+
+We already calculated all elements of the Jacobian in the previous step. The function **assemble_jacobian()** is responsible for putting them in the correct order. The species are ordered according to their position in the abundance table, so that the Jacobian will have the same order as the original species contact matrix. Note that how species are ordered does not affect the eigenvalues / stability of the network. But it is used to assess the competitive ranking of species. 
+
+**assemble_jacobian()** takes the following arguments:
+
+ * the *interaction_table* which was returned by interaction_strengths()
+ * *species_list* a list of species. The Jacobian is ordered according to this list. Use the first column of the abundance table!
+ * *ij_col* name of the column that contains the effects of species $i$ on species $j$ 
+ * *ji_col* name of the column that contains the effects of species $j$ on species $i$
+
+Note: Choosing column names is important once we start randomising matrices, which adds new columns to the interaction table.
+
+```{r}
+Jacobian = assemble_jacobian(interaction_table, abundance$species, "F_ij_B", "F_ji_B")
+print(Jacobian)
 ```
 
