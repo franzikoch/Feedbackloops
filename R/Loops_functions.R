@@ -13,6 +13,7 @@
 #' 
 #' @return a vector containing the loop strength and the loop weight 
 #' 
+#' 
 loop_weight <- function(loop, A){
   #returns the strength and weights of a single loops (given by the species sequence loop)
   l = length(loop) #length of the loop
@@ -48,6 +49,8 @@ loop_weight <- function(loop, A){
 #'@param A a Jacobian matrix in which all loops of length should be identified
 #'
 #'@return A list containing the strengths and weights of all loops of length n within A 
+#'
+#'@export
 #'
 loops <- function(n, A){
   
