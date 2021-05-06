@@ -4,8 +4,11 @@ abundance_path <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Abundance_Signy_1
 
 
 #format species contact matrix and abundance list
-contact_matrix <- read_data(competition_path, abundance_path)[[1]]
-abundance <- read_data(competition_path, abundance_path)[[2]]
+#contact_matrix1 <- read_data(competition_path, abundance_path)[[1]]
+#abundance1 <- read_data(competition_path, abundance_path)[[2]]
+
+contact_matrix <- read_contact_matrix(competition_path)
+abundance <- read_abundance(abundance_path, contact_matrix)
 
 #calculate interaction strengths
 interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0.9, -0.2))

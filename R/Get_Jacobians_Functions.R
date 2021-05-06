@@ -72,6 +72,17 @@ read_data <- function(path_competition, path_abundance){
   return(list(competition, abundance_new))
 }
 
+
+
+
+
+
+
+
+
+
+
+
 #' Calculates interaction_strengths from species_contact matrix
 #'
 #' In a first step, the species-contact matrix is turned into a tabular
