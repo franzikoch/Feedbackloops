@@ -61,12 +61,18 @@ loops <- function(n, A){
   
   #prepare lists to store loop weights and strengths 
   #(we know that there are twice as many possible loops as subsets in the list )
-  #unless its 2-link loops -> maybe put in an if-condition here?
-  loop_number = length(comb)*2
+  #unless its 2-link loops
+ 
+  if (n == 2){
+    loop_number = length(comb)
+  }else{
+    loop_number = length(comb)*2
+  }
+  
   strengths = vector('numeric', length = loop_number)
   weights = vector('numeric', length = loop_number)
   
-  index = 1 #used to index l3_strengths and l3_weights
+  index = 1 #index for strengths and weights vectors
   
   for (i in comb){
     #first loop -> right order
@@ -78,14 +84,18 @@ loops <- function(n, A){
     index = index + 1
     
     #same for the second loop -> same species but in reversed order
-    l2 <- loop_weight(rev(i), A)
-    strengths[index] <- l2[1]
-    weights[index] <- l2[2]
+    #only if n > 2
+    if(n>2){
+      l2 <- loop_weight(rev(i), A)
+      strengths[index] <- l2[1]
+      weights[index] <- l2[2]
+      
+      index = index+1
+    }
     
-    index = index+1
   }
   
-  #loops that have a weight of zero do not exist because one(or more) of their links is 0
+  #loops that have a weight of zero do not exist because one(or more) of their links is missing
   #remove them from the list
   strengths <-strengths[strengths > 0]
   weights <- weights[weights > 0]
