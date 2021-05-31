@@ -4,10 +4,10 @@
 #' During the full randomisation procedure, ALL interspecific interaction strengths are randomly 
 #' reshuffled within the network. Intraspecific interactions/ Diagonal values are not affected.
 #. Interaction strengths are reshuffled within the interaction table. They are also reshuffled across the two 
-#' interaction columns so that an F_ij value can become an F_ji value and 
-#' vice-vers. The function returns a new interaction table
+#' interaction columns so that an a_ij value can become an a_ji value and 
+#' vice-versa. The function returns a new interaction table
 #' that contains two columns with randomised interaction strengths. 
-#'  Use this table as input
+#' Use this table as input
 #' to assemble_jacobian_randomised() to get a fully randomised Jacobian matrix.
 #' Note: values are only randomised across existing links! (the interaction table 
 #' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
@@ -15,29 +15,32 @@
 #' the empirical one. 
 #' 
 #' @param df interaction table (created by interaction_strenghts())
+#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
+#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table but with two additional columns $ F_ij_B_rand 
-#' and $F_ji_B_rand that contain the same interaction strengths in a randomised order
+#' @return the same interaction table but with two additional columns $ a_ij_B_rand 
+#' and $a_ji_B_rand that contain the same interaction strengths in a randomised order
 #' @export
 
-randomize_all <- function(df){
+randomize_all <- function(df, ij_col, ji_col){
+  
   ###Implements full randomization of all interaction strenghts
   
   #add two new columns to df to store randomized interaction pairs
   z = length(df$Species_i)
-  df$F_ij_B_rand <- vector("numeric", z)
-  df$F_ji_B_rand <- vector("numeric", z)
+  df$a_ij_rand <- vector("numeric", z)
+  df$a_ji_rand <- vector("numeric", z)
   
   #pick all interspecific interactions from df 
   #(intraspecific interactions are not randomized)
   df_inter <-  df[df$Species_i != df$Species_j,]
   n = length(df_inter$Species_i)
-  #add the two columns of interactions strengths together and randomise their order
-  vec <- sample(c(df_inter$F_ij_B, df_inter$F_ji_B))
+  #add the two chosen columns of interactions strengths together and randomise their order
+  vec <- sample(c(df_inter[[ij_col]], df_inter[[ji_col]]))
   
   #fill randomized values back into the new columns in df 
-  df_inter$F_ij_B_rand <- vec[1:n]
-  df_inter$F_ji_B_rand <- vec[(1+n):(n*2)]
+  df_inter$a_ij_rand <- vec[1:n]
+  df_inter$a_ji_rand <- vec[(1+n):(n*2)]
   
   #sort df_inter values back into the original df 
   df[df$Species_i != df$Species_j,] <- df_inter
@@ -51,7 +54,7 @@ randomize_all <- function(df){
 #' 
 #' During pairwise randomisation, pairs of interaction strengths are kept intact but their 
 #' location is reshuffled across the network. In the interaction table this means the following:
-#' F_ij and F_ji values that appear in the same row in the original table, will also be in the same
+#' a_ij and a_ji values that appear in the same row in the original table, will also be in the same
 #' row in the pairwise randomised table(all though it is possible that they switch columns). 
 #' The function returns a new interaction table that contains two columns with randomised interaction strengths,
 #' Use this table as input
@@ -61,20 +64,22 @@ randomize_all <- function(df){
 #' the randomised interaction table, the network will have the same topology as
 #' the empirical one!
 #' 
-#' @param df interactiontable (created by interaction_strenghts())
+#' @param df interaction table (created by interaction_strenghts())
+#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
+#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table with additional columns $F_ij_B_pw and $F_ji_B_pw, 
+#' @return the same interaction table with additional columns $a_ij_B_pw and $a_ji_B_pw, 
 #' containing randomised interaction strengths
 #' 
 #' @export
 #' 
-randomize_pw <- function(df){
+randomize_pw <- function(df, ij_col, ji_col){
   ###Implements pairwise randomizations of interaction strengths in df 
   
   #add two new columns to df to store randomized interaction pairs
   z = length(df$Species_i)
-  df$F_ij_B_pw <- vector("numeric", z)
-  df$F_ji_B_pw <- vector("numeric", z)
+  df$a_ij_pw <- vector("numeric", z)
+  df$a_ji_pw <- vector("numeric", z)
   
   #pick all interspecific interactions from df 
   #(intraspecific interactions are not randomized)
@@ -86,15 +91,18 @@ randomize_pw <- function(df){
   
   for (i in 1:n){
     #use sample so the order within the interaction pair can be exchanged
-    pw_list[[i]] <- sample(c(df_inter$F_ij_B[i], df_inter$F_ji_B[i]))
+    col1 <- df_inter[[ij_col]]
+    col2 <- df_inter[[ji_col]]
+    
+    pw_list[[i]] <- sample(c(col1[i], col2[i]))
   }
   #randomize the order of list items
   pw_list <- sample(pw_list)
   
   #fill the shuffeled items into the df_inter
   for (i in 1:n){
-    df_inter$F_ij_B_pw[i] <- pw_list[[i]][1]
-    df_inter$F_ji_B_pw[i] <- pw_list[[i]][2]
+    df_inter$a_ij_pw[i] <- pw_list[[i]][1]
+    df_inter$a_ji_pw[i] <- pw_list[[i]][2]
   }
   #sort df_inter values back into the original df 
   df[df$Species_i != df$Species_j,] <- df_inter
