@@ -15,7 +15,9 @@
 #' 
 #' 
 loop_weight <- function(loop, A){
-  #returns the strength and weights of a single loops (given by the species sequence loop)
+  #returns the strength and weights of a single loop
+  #a loop is defines by the sequence of species
+  
   l = length(loop) #length of the loop
   
   #select the right coefficients from the matrix A 
@@ -36,8 +38,10 @@ loop_weight <- function(loop, A){
   strength = abs(prod(coefficients))
   weight = strength^(1/l)
   
-  return(c(strength, weight))
+  return(data.frame(species_sequence = paste(as.character(loop), collapse = " "),
+                    loop_strength = strength, loop_weight= weight))
 }
+
 
 #'Calculates the strengths and weights of all loops of length n within the matrix A 
 #'
@@ -48,58 +52,60 @@ loop_weight <- function(loop, A){
 #'@param n loop length
 #'@param A a Jacobian matrix in which all loops of length should be identified
 #'
-#'@return A list containing the strengths and weights of all loops of length n within A 
+#'@return A dataframe containing the loops, their strengths and weights
 #'
 #'@export
 #'
+
 loops <- function(n, A){
+  #find all loops of length n in the matrix
+  #and calculate their strengths as loop weights
   
   N <- nrow(A)  #number of species in the community 
   
   #combn returns a list of all unique n-species subsets of the network
   comb <- utils::combn(c(1:N), n, simplify = FALSE)
   
-  #prepare lists to store loop weights and strengths 
-  #(we know that there are twice as many possible loops as subsets in the list )
-  #unless its 2-link loops
- 
-  if (n == 2){
-    loop_number = length(comb)
-  }else{
-    loop_number = length(comb)*2
-  }
+  #initialise a data frame to store the results for all subsets 
+  r <- data.frame(species_sequence = character(),
+                  loop_strength = numeric(), 
+                  loop_weight = numeric())
   
-  strengths = vector('numeric', length = loop_number)
-  weights = vector('numeric', length = loop_number)
-  
-  index = 1 #index for strengths and weights vectors
-  
-  for (i in comb){
-    #first loop -> right order
-    l1 <- loop_weight(i, A)
+  #loop through all n-species subsets and calculate loop weights
+  for (i in seq_along(comb)){
     
-    #store the values in the lists prepared above
-    strengths[index] <- l1[1]
-    weights[index] <- l1[2]
-    index = index + 1
+    subset_i <- comb[[i]] #pick one n-species subset 
+    start_species <- subset_i[1] #what is the first species in the list?
     
-    #same for the second loop -> same species but in reversed order
-    #only if n > 2
-    if(n>2){
-      l2 <- loop_weight(rev(i), A)
-      strengths[index] <- l2[1]
-      weights[index] <- l2[2]
+    all_loops <- gtools::permutations(n,n,subset_i)
+    
+    #only those permutations that begin with the start_species are unique feedback loops
+    all_loops <- all_loops[all_loops[,1]==start_species,]
+    
+    #for 2-link loops, there is only one loop per subset
+    if(n == 2){
+      all_weights <- loop_weight(all_loops, A)
+    } else {
       
-      index = index+1
+      #for longer loops there are several loops per subset
+      #purrr is used to apply the loop weights function to each of them 
+      
+      #turn all loops into a list of vectors first
+      all_loops_list <- as.list(as.data.frame(t(all_loops)))
+      
+      #apply loop weights function to each element of the list
+      all_weights <- purrr::map_dfr(all_loops_list, loop_weight, A)
     }
     
+    #add loop weights to the data frame 
+    r <- rbind(r, all_weights)
   }
   
-  #loops that have a weight of zero do not exist because one(or more) of their links is missing
-  #remove them from the list
-  strengths <-strengths[strengths > 0]
-  weights <- weights[weights > 0]
+  #remove zeros from the list 
+  r <- r[r$loop_strength != 0,]
   
-  #return the list of loop strengths and weights 
-  return(list(strengths, weights))
+  return(r)
 }
+
+
+
