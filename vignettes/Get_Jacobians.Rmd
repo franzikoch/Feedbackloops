@@ -33,21 +33,30 @@ Estimating interaction strengths from empirical data requires the following step
 For each Jacobian, two data files are needed: 
 
 1. The **species-contact-matrix** csv file contains the wins/losses/draws/total interactions for each pair of interacting species. The first row contains species names and is used to name the columns of the table. Because the species contact matrix contains a 2 x 2 block of cells for each interaction, each species name is always repeated twice (both in the rows and in the columns). 
-1. The **abundance** csv file contains a table with two columns: species name and coresponding number of colonies per species. 
+1. The **abundance** csv file contains a table with two columns: species name and corresponding number of colonies per species. 
 
 Use the function **read_data(path_to_species_contact_matrix, path_to_abundance_table)** to read in the raw data files (only works if they have the exact format specified above!). The function returns a list with two elements: The first is a data.frame containing the species contact matrix in the correct format to be processed further and the second is another data.frame containing the abundance table. The function removes species that appear in the abundance table but not in the species contact matrix. Also, it makes sure that species in the abundance table are ordered in the same way as in the species-contact-matrix (Important because Dave ordered his matrices according to competitive rank.)
 
+To read datasets from csv files use: 
 ```{r}
-path_competition <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Competition_Rothera_1.csv"
-path_abundance <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Abundance_Rothera_1.csv"
-competition <- read_data(path_competition, path_abundance)[[1]]
-abundance <- read_data(path_competition, path_abundance)[[2]]
+path_competition <- "Competition_Signy_1.csv"
+path_abundance <- "Abundance_Signy_1.csv"
+
+contact_matrix <- read_contact_matrix(path_competition)
+abundance <- read_abundance(path_abundance, contact_matrix)
+```
+
+Here, we use the example data set provided with this package: 
+```{r}
+#load example data set
+#data("contact_matrix")
+#data("abundance")
 ```
 
 The competition table/species-contact matrix should look like this: 
 
 ```{r}
-head(competition)
+head(contact_matrix)
 ```
 
 and the abundance table like this: 
@@ -58,12 +67,12 @@ head(abundance)
 
 To make calculations easier, the function **interaction_strengths(competition_table, abundance_table, cost_list)** first converts the competition matrix to data.frame with one row for each pairwise interaction. In this format, the biomass loss rate of species $i$ due to competition with species $j$ can easily be calculated with the following formula: $F_{ij} = c_W W_{ij} + c_L L_{ij} + c_D D_{ij}$, where $W_{ij}$, $L_{ij}$ and $D_{ij}$ represent the number of wins, losses and ties for species $i$ in confrontation with species $j$ and $c_W$, $c_L$ and $c_D$ are the so-called cost-values. Cost-values are the fixed amount of lost biomass assigned to each type of competitive outcome. In the case of intraspecific interactions (species $i$ == species $j$), draws need to be counted twice, as such an interaction affects two colonies but only one confrontation is recorded in the species-contact matrix. For each row in the interaction table, two biomass loss rates ($F_{ij}$ and $F_{ji}$) are calculated. 
 
-To convert a given biomass loss rate $F_{ij}$ into interaction strengths (as in the element $a_{ij}$ of the Jacobian matrix), it is simply divided by the abundance $B$ of species $j$: $a_{ij} = \frac{F_{ij}{B_j}$. 
+To convert a given biomass loss rate $F_{ij}$ into interaction strengths (as in the element $a_{ij}$ of the Jacobian matrix), it is simply divided by the abundance $B$ of species $j$: $a_{ij} = \frac{F_{ij}}{B_j}$. 
 
 The interaction table returned by **interaction_strengths()** contains biomass loss rates and interaction strengths for all those interactions. The cost values must be supplied in the cost list in the following order: $c_W$, $c_L$, $c_D$. 
 
 ```{r}
-interaction_table <- interaction_strengths(competition, abundance, c(-0.1, -0.9, -0.2))
+interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0.9, -0.2))
 head(interaction_table)
 ```
 
