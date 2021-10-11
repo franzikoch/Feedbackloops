@@ -1,0 +1,166 @@
+---
+title: "Randomising communitiy matrices"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Randomisation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(pracma)
+library(Feedbackloops)
+```
+
+
+The goal of the randomization procedure is to destroy certain network structures that are present in the real network and to analyze the effects of these structures on network stability (measured by the real part of the dominant eigenvalue $Re(\lambda_d)$ and feedback structure (measured by the coefficients of the characteristic polynomial). The following types of randomisation procedures are used:
+ 
+ * Full randomization where all interspecific interactions strengths are randomly assigned a new position in the matrix. During this procedure all feedback loops $>1$ are destroyed
+ * pairwise randomization were pairwise interactions are kept the same but the pairs are reassigned.
+
+In all procedures, the diagonals are left untouched. Also, the topology of the network is preserved so that species that do not interact in the original network also do not interact in the randomised ones. 
+
+```{r}
+path_competition <- "Competition_Signy_1.csv"
+path_abundance <- "Abundance_Signy_1.csv"
+
+#read in raw data files
+contact_matrix <- read_contact_matrix(path_competition)
+abundance <- read_abundance(path_abundance, contact_matrix)
+
+#get interaction table
+interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0.9, -0.2))
+head(interaction_table)
+```
+
+Interaction strengths are randomised within the table of pairwise interactions: Each randomisation function adds a two new columns to this interaction table, which contain the same $a_ {ij}$ and $a_{ji}$ values, but their order is randomised according to certain rules. After this the function *assemble_jacobian()* reorders the randomised interaction strengths into the community matrix. This works in the same way as with the empirical matrix, according to the order defined in species list but it chooses the interaction strengths from the randomised columns. Values in the column *a_ij* column are assigned to the lower diagonal of the community matrix, while the values in the *a_ji* column are sorted above the diagonal.  
+
+
+### Apply randomisation functions to a network
+
+The randomisation functions are used to randomise the order of interaction strengths within the interaction table. 
+
+```{r}
+interaction_table <- interaction_table %>% 
+  randomize_all(ij_col = "F_ij_B", ji_col = "F_ji_B") %>% 
+  randomize_pw(ij_col = "F_ij_B", ji_col = "F_ji_B")
+
+head(interaction_table)
+```
+
+Four additional columns are added to the interaction table: In *a_ij_rand* and *a_ji_rand* all non-zero interaction strengths have been reordered. In *a_ij_pw* and *a_ji_pw* pairs of links (those in the same row) are still the same in the original matrix but the order of rows has been randomised as well as whether the value belongs to the *a_ij* or *a_ji* column- meaning that values can be exchanged from below to above the diagonal and vice-versa. 
+
+To build randomised community matrices, assemble_jacobian() is used. It needs the interaction_table as well as the list of species as inputs. We also need to specific which columns of the interaction table should be used to fill the matrix above the diagonal (ij_col) and which to fill below the diagonal (ji_col). 
+
+```{r}
+Jacobian_rand <- assemble_jacobian(interaction_table = interaction_table,
+                                   species_list = abundance[,1] ,
+                                   ij_col = "a_ij_rand", ji_col = "a_ij_rand")
+Jacobian_pw <- assemble_jacobian(interaction_table = interaction_table, 
+                                 species_list = abundance[,1],
+                                 ij_col = "a_ij_pw", ji_col = "a_ji_pw")
+```
+
+Just to show an example, a fully randomised matrix could look like this: 
+```{r}
+Jacobian_rand
+```
+compared to the empirical one: 
+```{r}
+Jacobian_emp <- assemble_jacobian(interaction_table = interaction_table, 
+                                  species_list = abundance[,1], 
+                                  ij_col = "F_ij_B", ji_col = "F_ji_B")
+Jacobian_emp
+```
+
+### Repeatedly randomising a set of networks: 
+
+To analyse the effect of destroying certain structures of a network, we have to create a set of randomised networks and compare their properties to the empirical one. To do this it is helpful to write a wrapper function, that defines all randomisation steps for one network, as well as a second function that returns all network properties of interest in the form of a data frame with one row, e.g.: 
+
+```{r}
+analyse_jacobian <- function(Jacobian,site_name, type, replacement = 0.1){
+  
+  "Analyses the property of one community matrix"
+  
+  #calculate 2-link loops
+  l2_weights <- loops(2, Jacobian)$loop_weight
+  l2_strengths <- loops(2, Jacobian)$loop_strength
+  
+  #calculate 3-link loops
+  l3_weights <- loops(3, Jacobian)$loop_weight
+  l3_strengths <- loops(3, Jacobian)$loop_strength
+  
+  #calculate eigenvalues
+  eigs <- eigen(Jacobian)$values
+  #identify the lambda with the largest real part
+  lambda_d <- eigs[which.max(Re(eigs))]
+  
+  #calculate F2 of the scaled matrix should be equal to the sum of two link loops  
+  charpoly <- charpoly(Jacobian)
+  F2 <- charpoly[3]*-1
+  F3 <- charpoly[4]*-1
+  
+  ###get region from the site name################################
+  site_region = unlist(strsplit(site_name, "_"))[[1]]
+  
+  return(data.frame(name = site_name, region = site_region,
+                    type = type,
+                    maxl2 = max(l2_weights), meanl2 = mean(l2_weights), suml2 = sum(l2_strengths),
+                    maxl3 = max(l3_weights), meanl3 = mean(l3_weights), suml3 = sum(l3_strengths),
+                    F2 = F2, F3 = F3, 
+                    lambda_d = lambda_d,
+                    stringsAsFactors = FALSE))
+}
+
+```
+
+Then the analyse_jacobian() function can be called repeatedly for each randomised matrix and the single-row data-frames can be combined into one large table containing all randomisation results: 
+
+```{r}
+randomise <- function(interaction_table, species_list, site_name, iterations, mean_aij){
+  
+  "Defines which randomisations should be applied to a network and how many times 
+  it should be repeated"
+  
+  cat("Randomization of:", site_name, "\n")
+  tictoc::tic("Time:")
+  
+  #assemble and analyse the real Jacobian
+  Jacobian <- assemble_jacobian(interaction_table, species_list, ij_col = "F_ij_B", ji_col = "F_ji_B")
+  results <- analyse_jacobian(Jacobian, site_name, type = "real")
+  
+  for (i in 1:iterations){
+    interaction_table <- interaction_table %>% 
+      randomize_all(ij_col = "F_ij_B", ji_col = "F_ji_B") %>% 
+      randomize_pw(ij_col = "F_ij_B", ji_col = "F_ji_B")
+    Jacobian_rand <- assemble_jacobian(interaction_table, species_list, ij_col = "a_ij_rand", ji_col = "a_ji_rand")
+    rand_results <- analyse_jacobian(Jacobian_rand, site_name, type = "rand")
+    
+    Jacobian_pw <- assemble_jacobian(interaction_table, species_list, ij_col = "a_ij_pw", ji_col = "a_ji_pw")
+    pw_results <- analyse_jacobian(Jacobian_pw, site_name, type = "pw")
+    
+    #add to full results data frame
+    results <- rbind(results, rand_results, pw_results)
+  }
+  tictoc::toc()
+  return(results)
+}
+```
+
+```{r}
+results <- randomise(interaction_table, abundance[,1], "Signy_1", 20)
+head(results)
+```
+To repeat this analysis for a set of networks, combine all interaction_tables in a list and apply the randomise() function to each element of the list, e.g. with purrr:map_dfr() (see example scripts)
+
+```{r, eval = FALSE}
+full_results <- pmap_dfr(list(interaction_tables, species_names_list, names_sans), randomise, iterations, 0.1 )
+```
+
