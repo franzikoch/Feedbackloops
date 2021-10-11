@@ -6,9 +6,9 @@
 #. Interaction strengths are reshuffled within the interaction table. They are also reshuffled across the two 
 #' interaction columns so that an a_ij value can become an a_ji value and 
 #' vice-versa. The function returns a new interaction table
-#' that contains two columns with randomised interaction strengths. 
-#' Use this table as input
-#' to assemble_jacobian_randomised() to get a fully randomised Jacobian matrix.
+#' that contains two columns with randomised interaction strengths.
+#'  
+#' Use this table as inputto assemble_jacobian() and specify the new columns to get a fully randomised Jacobian matrix.
 #' Note: values are only randomised across existing links! (the interaction table 
 #' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
 #' the randomised interaction table, the network will have the same topology as
@@ -18,7 +18,7 @@
 #' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
 #' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table but with two additional columns $ a_ij_B_rand 
+#' @return the same interaction table but with two additional columns $a_ij_B_rand 
 #' and $a_ji_B_rand that contain the same interaction strengths in a randomised order
 #' @export
 
@@ -56,9 +56,11 @@ randomize_all <- function(df, ij_col, ji_col){
 #' location is reshuffled across the network. In the interaction table this means the following:
 #' a_ij and a_ji values that appear in the same row in the original table, will also be in the same
 #' row in the pairwise randomised table(all though it is possible that they switch columns). 
-#' The function returns a new interaction table that contains two columns with randomised interaction strengths,
-#' Use this table as input
-#' to assemble_jacobian_randomised() to get a fully randomised Jacobian matrix.
+#' The function returns a new interaction table that contains two columns with randomised interaction strengths.
+#' 
+#' Use this table as input to assemble_jacobian() and specify the two new columns
+#' to get a pairwise randomised Jacobian matrix.
+#' 
 #' Note: values are only randomised across existing links! (the interaction table 
 #' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
 #' the randomised interaction table, the network will have the same topology as
@@ -217,6 +219,170 @@ assemble_jacobian_randomized <- function(df, species_list, column){
   #turn NAs into zeros 
   Jacobian[is.na(Jacobian)]<-0
   return(Jacobian)
+}
+
+
+#' Randomise a community matrix to have perfect asymmetry 
+#' 
+#' During the randomisation procedure, all interaction strengths are reordered to 
+#' make the 2-link loops in the randomised system as asymmetric as possible. To do this, 
+#' all links are ordered by size. Then, the very strongest link is paired with the
+#' weakest one, the second strongest with the second weakest etc. The location of 
+#' pairwise interactions in the network is chosen randomly. Also, links are randomised 
+#' between the ij and ji column, so that the strong links can appear both above and below
+#' the diagonal. 
+#'
+#' 
+#' The function returns a new interaction table that contains two columns with randomised interaction strengths,
+#' Use this table as input to assemble_jacobian() and specify the new columns to 
+#' build the Jacobian matrix.
+#' 
+#' Note: values are only randomised across existing links! (the interaction table 
+#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
+#' the randomised interaction table, the network will have the same topology as
+#' the empirical one!
+#' 
+#' @param it interaction table (created by interaction_strengths())
+#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
+#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
+#' 
+#' @return the same interaction table with additional columns $a_ij_asym and $a_ji_asym, 
+#' containing randomised interaction strengths
+#' 
+#' @export
+
+randomise_asymmetric <- function(it, ij_col, ji_col){
+  
+  #add two new columns to df to store randomized interaction pairs
+  z = nrow(it)
+  it$a_ij_asym <- vector("numeric", z)
+  it$a_ji_asym <- vector("numeric", z)
+  
+  #pick all interspecific interactions from df 
+  #(intraspecific interactions are not randomized)
+  it_inter <-  it[it$Species_i != it$Species_j,]
+  n = nrow(it_inter)
+  #add the two chosen columns of interactions strengths together and sort them by size 
+  all_aij <- c(it_inter[[ij_col]], it_inter[[ji_col]])
+  all_aij_ordered <- all_aij[order(all_aij)]
+  
+  #each entry of the pairwise list is one pair of interaction strengths
+  #that belong together
+  pw_list <- vector("list", length = n)
+  
+  index1 = 1 #starts at the first list element
+  index2 = length(all_aij_ordered) #starts at the last list element
+  
+  #fill the list of pairwise interactions from the list of ordered interaction strengths
+  for (i in 1:n){
+    
+    col1 <- all_aij_ordered[index1] #stronger link
+    col2 <- all_aij_ordered[index2] #weaker link
+    
+    #use sample, so that the column can be exchanged -> whether the
+    #stronger value appears below or above the diagonal is randomised 
+    pw_list[[i]] <- sample(c(col1, col2))
+    
+    #update indices 
+    index1 <- index1 + 1
+    index2 <- index2 - 1
+  }
+  
+  #randomize the order of list items
+  pw_list <- sample(pw_list)
+  
+  #fill the shuffeled items back into the interaction table
+  for (i in 1:n){
+    it_inter$a_ij_asym[i] <- pw_list[[i]][1]
+    it_inter$a_ji_asym[i] <- pw_list[[i]][2]
+  }
+  #sort df_inter values back into the original interaction table
+  it[it$Species_i != it$Species_j,] <- it_inter
+  
+  return(it)
+}
+
+
+#' Randomise a community matrix to have perfect asymmetry and hierarchy
+#' 
+#' During the randomisation procedure, all interaction strengths are reordered to 
+#' make the 2-link loops in the randomised system as asymmetric as possible. To do this, 
+#' all links are ordered by size. Then, the very strongest link is paired with the
+#' weakest one, the second strongest with the second weakest etc. The location of 
+#' pairwise interactions in the network is chosen randomly. The stronger link of each 
+#' interaction is placed below the diagonal of the matrix, while all weaker links are
+#' placed above the diagonal. This makes sure that the matrix is also perfectly hierarchical, 
+#' meaning the the weight of all loops > 2 is reduced as well. 
+#' 
+#' The function returns a new interaction table that contains two columns with randomised interaction strengths,
+#' Use this table as input to assemble_jacobian() and specify the new columns to 
+#' build the Jacobian matrix.
+#' 
+#' Note: values are only randomised across existing links! (the interaction table 
+#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
+#' the randomised interaction table, the network will have the same topology as
+#' the empirical one!
+#' 
+#' @param it interaction table (created by interaction_strengths())
+#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
+#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
+#' 
+#' @return the same interaction table with additional columns $a_ij_asym_h and $a_ji_asym_h, 
+#' containing randomised interaction strengths
+#' 
+#' @export
+
+randomise_asymmetric_hierarchical <- function(it, ij_col, ji_col){
+  
+  #add two new columns to the interaction table to store randomized interaction pairs
+  z = nrow(it)
+  it$a_ij_asym_h <- vector("numeric", z)
+  it$a_ji_asym_h <- vector("numeric", z)
+  
+  #pick all interspecific interactions from it
+  #(intraspecific interactions are not randomized)
+  it_inter <-  it[it$Species_i != it$Species_j,]
+  n = nrow(it_inter)
+  #add the two chosen columns of interactions strengths together and sort them by size 
+  all_aij <- c(it_inter[[ij_col]], it_inter[[ji_col]])
+  all_aij_ordered <- all_aij[order(all_aij)]
+  
+  #each entry of the pairwise list is one pair of interaction strengths
+  #that belong together
+  pw_list <- vector("list", length = n)
+  
+  index1 = 1 #starts at the first list element
+  index2 = length(all_aij_ordered) #starts at the last list element
+  
+  #fill the list of pairwise interactions from the list of ordered interaction strengths
+  for (i in 1:n){
+  
+    col1 <- all_aij_ordered[index1] #stronger link
+    col2 <- all_aij_ordered[index2] #weaker link
+    
+    pw_list[[i]] <- c(col1, col2)
+    
+    #update indices 
+    index1 <- index1 + 1
+    index2 <- index2 - 1
+    
+  }
+  
+  #randomize the order of list items/ the location of links in the matrix
+  pw_list <- sample(pw_list)
+  
+  #fill the shuffeled items back into the interaction table
+  for (i in 1:n){
+    #the stronger link is filled below the diagonal 
+    it_inter$a_ji_asym_h[i] <- pw_list[[i]][1]
+    #the weaker link is filled above the diagonal 
+    it_inter$a_ij_asym_h[i] <- pw_list[[i]][2]
+    
+  }
+  #sort df_inter values back into the original interaction table
+  it[it$Species_i != it$Species_j,] <- it_inter
+  
+  return(it)
 }
 
 
