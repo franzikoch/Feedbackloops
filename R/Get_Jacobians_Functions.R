@@ -165,11 +165,11 @@ interaction_strengths <- function(competition, abundance, cost_list){
   #initialize vectors to save interactions strengths
   n = dim(df)[1] #number of confrontations
   F_ii <- vector("numeric", length = n)
-  F_ii_B <- vector("numeric", length = n)
+  a_ii <- vector("numeric", length = n)
   F_ij <- vector("numeric", length = n)
-  F_ij_B <- vector("numeric", length = n)
+  a_ij <- vector("numeric", length = n)
   F_ji <- vector("numeric", length = n)
-  F_ji_B <- vector("numeric", length = n)
+  a_ji <- vector("numeric", length = n)
 
   for(i in 1:n){#go through all confrontations
     #check whether the confrontation is intra- or interspecific
@@ -178,20 +178,20 @@ interaction_strengths <- function(competition, abundance, cost_list){
       #draws are doubled here
       F_ii[i] <- win_cost*df$Wins_i[i]+ loss_cost*df$Wins_j[i]+ 2*draw_cost*df$Draws[i]
       #divide F_ii by abundance of species i, which is taken from the abundance table
-      F_ii_B[i] <- F_ii[i]/abundance[abundance[,1] == df$Species_i[i],2]
+      a_ii[i] <- F_ii[i]/abundance[abundance[,1] == df$Species_i[i],2]
     }else{ #if competition is interspecific
       #impact of species j on species i
       F_ij[i] <- win_cost*df$Wins_i[i]+ loss_cost*df$Wins_j[i] + draw_cost*df$Draws[i]
       #divide F_ij by the abundance of species j
-      F_ij_B[i] <- F_ij[i]/abundance[abundance[,1] == df$Species_j[i],2]
+      a_ij[i] <- F_ij[i]/abundance[abundance[,1] == df$Species_j[i],2]
       #impact of species i on species j
       F_ji[i] <- win_cost*df$Wins_j[i]+ loss_cost*df$Wins_i[i] + draw_cost*df$Draws[i]
       #divide F_ji by the abundance of species i
-      F_ji_B[i] <- F_ji[i]/abundance[abundance[,1] == df$Species_i[i],2]
+      a_ji[i] <- F_ji[i]/abundance[abundance[,1] == df$Species_i[i],2]
     }
   }
   #add vectors to the df
-  df <- cbind(df, F_ii, F_ii_B,F_ij,F_ij_B, F_ji, F_ji_B)
+  df <- cbind(df, F_ii, a_ii_B,F_ij,a_ij, F_ji, a_ji)
 
   return(df)
 }
@@ -235,7 +235,7 @@ assemble_jacobian <- function(interaction_table, species_list, ij_col, ji_col){
     if (index_i == index_j){#for intraspecific interactions
       
       #digaonal values are not affected by randomisations, so the same column does not change
-      Jacobian[index_i, index_j] <- row[['F_ii_B']] #fill F_ii value into the matrix
+      Jacobian[index_i, index_j] <- row[['a_ii']] #fill F_ii value into the matrix
       
     }else{ #for interspecific interactions
       
