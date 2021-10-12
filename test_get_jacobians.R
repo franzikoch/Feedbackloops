@@ -14,4 +14,4 @@ abundance <- read_abundance(abundance_path, contact_matrix)
 interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0.9, -0.2))
 
 #assemble the Jacobian matrix
-Jacobian <- assemble_jacobian(interaction_table, abundance[,1], "F_ij_B", "F_ji_B")
+Jacobian <- assemble_jacobian(interaction_table, abundance[,1], "a_ij", "a_ji")

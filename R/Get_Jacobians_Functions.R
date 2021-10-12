@@ -191,7 +191,7 @@ interaction_strengths <- function(competition, abundance, cost_list){
     }
   }
   #add vectors to the df
-  df <- cbind(df, F_ii, a_ii_B,F_ij,a_ij, F_ji, a_ji)
+  df <- cbind(df, F_ii, a_ii,F_ij,a_ij, F_ji, a_ji)
 
   return(df)
 }
