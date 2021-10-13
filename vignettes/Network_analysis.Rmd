@@ -21,4 +21,5 @@ library(Feedbackloops)
 This package contains tools to analyse the structure and stability of competition networks. 
 
 ### Determining stability using s*
+###Scaling interaction strengths
 ### Analysing feedback structure of the network

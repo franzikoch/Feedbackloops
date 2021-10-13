@@ -49,8 +49,8 @@ The randomisation functions are used to randomise the order of interaction stren
 
 ```{r}
 interaction_table <- interaction_table %>% 
-  randomize_all(ij_col = "F_ij_B", ji_col = "F_ji_B") %>% 
-  randomize_pw(ij_col = "F_ij_B", ji_col = "F_ji_B")
+  randomize_all(ij_col = "a_ij", ji_col = "a_ji") %>% 
+  randomize_pw(ij_col = "a_ij", ji_col = "a_ji")
 
 head(interaction_table)
 ```
@@ -76,7 +76,7 @@ compared to the empirical one:
 ```{r}
 Jacobian_emp <- assemble_jacobian(interaction_table = interaction_table, 
                                   species_list = abundance[,1], 
-                                  ij_col = "F_ij_B", ji_col = "F_ji_B")
+                                  ij_col = "a_ij", ji_col = "a_ji")
 Jacobian_emp
 ```
 
@@ -133,13 +133,13 @@ randomise <- function(interaction_table, species_list, site_name, iterations, me
   tictoc::tic("Time:")
   
   #assemble and analyse the real Jacobian
-  Jacobian <- assemble_jacobian(interaction_table, species_list, ij_col = "F_ij_B", ji_col = "F_ji_B")
+  Jacobian <- assemble_jacobian(interaction_table, species_list, ij_col = "a_ij", ji_col = "a_ji")
   results <- analyse_jacobian(Jacobian, site_name, type = "real")
   
   for (i in 1:iterations){
     interaction_table <- interaction_table %>% 
-      randomize_all(ij_col = "F_ij_B", ji_col = "F_ji_B") %>% 
-      randomize_pw(ij_col = "F_ij_B", ji_col = "F_ji_B")
+      randomize_all(ij_col = "a_ij", ji_col = "a_ji") %>% 
+      randomize_pw(ij_col = "a_ij", ji_col = "a_ji")
     Jacobian_rand <- assemble_jacobian(interaction_table, species_list, ij_col = "a_ij_rand", ji_col = "a_ji_rand")
     rand_results <- analyse_jacobian(Jacobian_rand, site_name, type = "rand")
     

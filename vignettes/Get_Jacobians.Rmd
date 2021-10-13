@@ -90,7 +90,7 @@ We already calculated all elements of the Jacobian in the previous step. The fun
 Note: Choosing column names is important once we start randomising matrices, which adds new columns to the interaction table.
 
 ```{r}
-Jacobian = assemble_jacobian(interaction_table, abundance$species, "F_ij_B", "F_ji_B")
+Jacobian = assemble_jacobian(interaction_table, abundance$species, "a_ij", "a_ji")
 print(Jacobian)
 ```
 
