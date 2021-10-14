@@ -91,7 +91,7 @@ scale_interaction_table <- function(interaction_table, r_factor){
   #calculate mean interspecific interaction strengths
   mean_aij <- interaction_table %>% 
     dplyr::filter(Species_i != Species_j) %>% 
-    dplyr::select(F_ij_B, F_ji_B) %>% 
+    dplyr::select(a_ij, a_ji) %>% 
     unlist() %>% mean()
   
   a_ij_scaled <- vector("numeric", length = nrow(interaction_table))
