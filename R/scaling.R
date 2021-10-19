@@ -109,10 +109,10 @@ scale_interaction_table <- function(interaction_table, r_factor){
       
       #pick a_ii
       a_ii <- interaction_table %>% 
-        dplyr::filter(Species_i == species_i & Species_j == species_i) %>% .$F_ii_B
+        dplyr::filter(Species_i == species_i & Species_j == species_i) %>% .$a_ii
       
       a_jj <- interaction_table %>% 
-        dplyr::filter(Species_i == species_j & Species_j == species_j) %>% .$F_ii_B
+        dplyr::filter(Species_i == species_j & Species_j == species_j) %>% .$a_ii
       
       
       #check whether a_ii or a_jj are missing, 
@@ -121,10 +121,10 @@ scale_interaction_table <- function(interaction_table, r_factor){
       if (length(a_jj) == 0){a_jj <- mean_aij * r_factor}
       
       #scale F_ij by dividing it by a_ii
-      a_ij_scaled[i] <- (interaction_table[i,]$F_ij_B / a_ii)*-1
+      a_ij_scaled[i] <- (interaction_table[i,]$a_ij / a_ii)*-1
       
       #scale F_ji by dividing it by a_jj
-      a_ji_scaled[i] <- (interaction_table[i,]$F_ji_B/ a_jj)*-1
+      a_ji_scaled[i] <- (interaction_table[i,]$a_ji/ a_jj)*-1
     }
   }
   
