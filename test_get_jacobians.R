@@ -1,6 +1,6 @@
 #testing get_jacobians_functions
-competition_path <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Competition_Signy_1.csv"
-abundance_path <- "~/Documents/Bryozoans/Rohdaten/Data_cleaned/Abundance_Signy_1.csv"
+competition_path <- "vignettes/Competition_Signy_1.csv"
+abundance_path <- "vignettes/Abundance_Signy_1.csv"
 
 
 #format species contact matrix and abundance list
