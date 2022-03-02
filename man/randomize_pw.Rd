@@ -4,23 +4,30 @@
 \alias{randomize_pw}
 \title{Pairiwise randomisation of an interaction table}
 \usage{
-randomize_pw(df)
+randomize_pw(df, ij_col, ji_col)
 }
 \arguments{
-\item{df}{interactiontable (created by interaction_strenghts())}
+\item{df}{interaction table (created by interaction_strenghts())}
+
+\item{ij_col}{column of a_ij values to randomise (choose scaled or unscaled)}
+
+\item{ji_col}{column of a_ji values to randomise (scaled or unscaled)}
 }
 \value{
-the same interaction table with additional columns $F_ij_B_pw and $F_ji_B_pw,
+the same interaction table with additional columns $a_ij_B_pw and $a_ji_B_pw,
 containing randomised interaction strengths
 }
 \description{
 During pairwise randomisation, pairs of interaction strengths are kept intact but their
 location is reshuffled across the network. In the interaction table this means the following:
-F_ij and F_ji values that appear in the same row in the original table, will also be in the same
+a_ij and a_ji values that appear in the same row in the original table, will also be in the same
 row in the pairwise randomised table(all though it is possible that they switch columns).
-The function returns a new interaction table that contains two columns with randomised interaction strengths,
-Use this table as input
-to assemble_jacobian_randomised() to get a fully randomised Jacobian matrix.
+The function returns a new interaction table that contains two columns with randomised interaction strengths.
+}
+\details{
+Use this table as input to assemble_jacobian() and specify the two new columns
+to get a pairwise randomised Jacobian matrix.
+
 Note: values are only randomised across existing links! (the interaction table
 does not contain non-existent links). Thus, if the Jacobian is reconstructed from
 the randomised interaction table, the network will have the same topology as
