@@ -1,5 +1,5 @@
 ---
-title: "Network_analysis"
+title: "Analysing the properties of competition networks"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Network_analysis}
@@ -16,10 +16,68 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(Feedbackloops)
+
+#load an example Jacobian matrix
+contact_matrix <- read_contact_matrix("Competition_Signy_1.csv")
+abundance <- read_abundance("Abundance_Signy_1.csv", contact_matrix)
+interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0.9, -0.2))
+Jacobian <- assemble_jacobian(interaction_table, abundance$species, "a_ij", "a_ji")
+
 ```
 
 This package contains tools to analyse the structure and stability of competition networks. 
 
-### Determining stability using s*
-###Scaling interaction strengths
+### Determining stability
+
+The eigenvalues $\lambda$ of the Jacobian matrix can be used to asses the behaviour of the system in the vicinity of the (assumed) equilibrium. Their real parts describe the rate of exponential growth or decay with which a small perturbation would increase (if the rate is positive) or decrease (if it is negative). An equilibrium is only considered stable, when all eigenvalues have negative real parts, so that all perturbations decay over time. The so-called dominant eigenvalue $\lambda_d$, that is the eigenvalue with the largest real part, can be used as an indicator of system stability: If it is negative, the real parts of all other eigenvalues must be negative as well and thus, the system is stable. 
+
+We can calculate the dominant eigenvalue $\lambda_d$ of a community matrix using the *eigen()* function (part of base R):
+```{r}
+#calculate eigenvalues
+eigs <- eigen(Jacobian)$values
+#identify the lambda with the largest real part
+lambda_d <- eigs[which.max(Re(eigs))]
+print(lambda_d)
+```
+Our example matrix has a positive real part, which means that it is unstable. 
+
+$Re(\lambda_d)$ tells us whether a given system is stable or not, but it cannot be used to directly compare the stability of different matrices. To do this, we use the concept of critical selfregulation $s^*$(Neutel 2002, 2007). As any community (that has only non-zero diagonal values) can be stabilised by artificially increasing the strength of self-regulation, so that the diagonal values become more negative. We can determine $s^*$ relative to the estimated diagonal values, by mutliplying all diagonal elements with a control parameter $s$ and continously increase $s$ until the matrix becomes stable. The critical amount of self-regulation $s*$ is then the smallest s value that causes the real parts of all eigenvalues to be negative. 
+
+First, we need to replace missing diagonal values with small numbers to make the calculation of $s*$ possible. The *replace_zeros()* function replaces any diagonal element $a_{ii} =0$ with the mean interaction strength of the matrix, multiplied with a factor $f$.  Then, we can calculate the critical amount of self-regulation of a community matrix with the *find_s()* function:
+
+```{r}
+#replace missing diagonals with mean interaction strength * 0.1
+Jacobian <- replace_zeros(Jacobian, f = 0.1)
+#calculate s* with a precision of 0.01
+s_star <- find_s(Jacobian, step_size = 0.01, max_s = 500)
+print(s_star)
+```
+As our community matrix is unstable, it needs additional self-regulation to become stable and $s* > 1$. 
+
+
+### Scaling interaction strengths
+
+
+$Re(\lambda_d)$ can be directly used to compare the stability on different matrices only if they have the same uniform diagonal. However, the strength of self-regulation differs a lot within and between empirical networks. Following the approach of Neutel and Thorne (2014) to deal with this problem: The interspecific interaction strengths are normalized by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix A onto the off-diagonal structure, which facilitates comparison of stability at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures. The resulting scaled matrix has the elements and a uniform diagonal of $-1$. 
+
+The real part of the dominant eigenvalues of a scaled matrix  can be used to directly compare system stability, because it is linked to the critical amount of self-regulation s* of the system (Neutel 2014, 2021). 
+
+
 ### Analysing feedback structure of the network
+
+Local stability analysis enables us to asses the stability of an equilibrium point by analysing whether a small perturbations that is introduced to the system grows or decays. It is not able to explain **why** the equilibrium is stable or not. In order to investigate the mechanisms behind the dynamic stability of a network, we have to take a closer look at its structure. How a network reacts a perturbation to one of its elements is tightly linked to the **feedback loops** that are present in the system. 
+
+Feedback loops are circuits of effects, caused by mutual interactions between species. In general, a feedback loop of length $n$ contains $n$ links, each with a different weight that corresponds to the interaction strength. The strength of the whole loop, defined as the product of all links within it, determines its effect on the system's response to a small perturbation. If the product is positive, a disturbance is amplified and the system is driven away from its initial state, while negative loops dampen disturbances and cause the system to move back. Since all species in a network are connected via loops of different lengths, a disturbance to just one species can have direct or indirect effects on all others - but how exactly the system responds depends on the interaction strengths and how they are distributed over positive and negative feedback loops. 
+
+
+#### Loop weights
+
+The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and the values are hard to compare for loops of different lengths. We use Neutel 2002's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
+
+#### Total feedback values
+
+We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n $ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. Note that the exact way in which feedback loop strengths must be combined arises from the calculation of the determinant of the Jacobian matrix. For a more detailed derivation see Levins 1974
+
+Based on this measure, Levins derives two conditions for the local stability of a dynamic equilibrium: (1) The total feedback Fk at each level k within the system must be negative and (2) negative feedback at higher levels must be balanced with negative feedback at lower levels.While the concept of feedback loops and the idea that there has to be a balance between positive and negative feedback is fairly intuitive, the number of possible loops increases factorially with the number of species in the system and the way in which loops are combined becomes increasingly complicated. However, Fk can be used to determine system stability because it is connected to the eigenvalues of a system via the characteristic polynomial of the Jacobian matrix A, whose roots are the eigenvalues and whose coefficients are the total feedback values (Brooks 2006). This connection can be used to quantify the feedback structure within larger communities. 
+
+
