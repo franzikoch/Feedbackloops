@@ -26,6 +26,15 @@ randomize_all <- function(df, ij_col, ji_col){
   
   ###Implements full randomization of all interaction strenghts
   
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+  
+  
   #add two new columns to df to store randomized interaction pairs
   z = length(df$Species_i)
   df$a_ij_rand <- vector("numeric", z)
@@ -78,6 +87,14 @@ randomize_all <- function(df, ij_col, ji_col){
 randomize_pw <- function(df, ij_col, ji_col){
   ###Implements pairwise randomizations of interaction strengths in df 
   
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+  
   #add two new columns to df to store randomized interaction pairs
   z = length(df$Species_i)
   df$a_ij_pw <- vector("numeric", z)
@@ -128,6 +145,14 @@ randomize_pw <- function(df, ij_col, ji_col){
 #' @export
 randomize_pw2 <- function(df){
   ###Implements pairwise randomizations of interaction strengths in df 
+  
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
   
   #add two new columns to df to store randomized interaction pairs
   z = length(df$Species_i)
@@ -253,6 +278,14 @@ assemble_jacobian_randomized <- function(df, species_list, column){
 
 randomise_asymmetric <- function(it, ij_col, ji_col){
   
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+  
   #add two new columns to df to store randomized interaction pairs
   z = nrow(it)
   it$a_ij_asym <- vector("numeric", z)
@@ -333,6 +366,14 @@ randomise_asymmetric <- function(it, ij_col, ji_col){
 #' @export
 
 randomise_asymmetric_hierarchical <- function(it, ij_col, ji_col){
+  
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
   
   #add two new columns to the interaction table to store randomized interaction pairs
   z = nrow(it)
