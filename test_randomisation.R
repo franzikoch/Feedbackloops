@@ -1,11 +1,12 @@
 #testing randomisation functions 
 #run test_get_jacobians first to get a Jacobian 
+source("test_get_jacobians.R")
 
 #-WITHOUT SCALING-------------------------------------------------------------
 #add new randomised columns to the interaction table data frame 
 interaction_table <- interaction_table %>% 
-  randomize_all(ij_col = "F_ij_B", ji_col = "F_ji_B") %>% 
-  randomize_pw(ij_col = "F_ij_B", ji_col = "F_ji_B")
+  randomize_all(ij_col = "a_ij", ji_col = "a_ji") %>% 
+  randomize_pw(ij_col = "a_ij", ji_col = "a_ji")
 
 #assemble randomised Jacobians
 Jacobian_rand <- assemble_jacobian(interaction_table, abundance[,1], "a_ij_rand", "a_ij_rand")
