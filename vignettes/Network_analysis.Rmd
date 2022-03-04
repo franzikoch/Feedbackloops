@@ -25,7 +25,6 @@ Jacobian <- assemble_jacobian(interaction_table, abundance$species, "a_ij", "a_j
 
 ```
 
-This package contains tools to analyse the structure and stability of competition networks. 
 
 ### Determining stability
 
@@ -60,7 +59,23 @@ As our community matrix is unstable, it needs additional self-regulation to beco
 
 $Re(\lambda_d)$ can be directly used to compare the stability on different matrices only if they have the same uniform diagonal. However, the strength of self-regulation differs a lot within and between empirical networks. Following the approach of Neutel and Thorne (2014) to deal with this problem: The interspecific interaction strengths are normalized by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix A onto the off-diagonal structure, which facilitates comparison of stability at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures. The resulting scaled matrix has the elements and a uniform diagonal of $-1$. 
 
-The real part of the dominant eigenvalues of a scaled matrix  can be used to directly compare system stability, because it is linked to the critical amount of self-regulation s* of the system (Neutel 2014, 2021). 
+After the diagonal has been set to 0, the real part of the dominant eigenvalues of the scaled matrix can be used to directly compare system stability, because it is linked to the critical amount of self-regulation s* of the system (Neutel 2014, 2021). 
+
+We can scale a given Jacobian matrix directly using *scale_matrix()*. The parameter *aii* specifies the value of all diagonal elements (default is 0): 
+
+```{r}
+scale_matrix(Jacobian, aii = 0)
+```
+
+To combine the scaling with randomisation procedures,the values in the interaction tables must be scaled using *scale_interaction_table()*. The function requires *r_factor* as an input parameter, that determines how missing diagonal values are replaced.  
+
+```{r}
+table_scaled <- scale_interaction_table(interaction_table, r_factor = 0.1)
+head(table_scaled)
+```
+
+The function adds two new columns to the dataframe: \$a_ij_scaled and \$a_ji_scaled. These can be used as the input to the randomisation functions. 
+
 
 
 ### Analysing feedback structure of the network
@@ -74,10 +89,26 @@ Feedback loops are circuits of effects, caused by mutual interactions between sp
 
 The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and the values are hard to compare for loops of different lengths. We use Neutel 2002's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
 
+The function *loops(n, A)* calculates the strengths and weights of all loops of given length $n$ within the matrix $\mathbf{A}$ and returns a dataframe containing the strength (product of all links) and weights (geometric mean of al links) of all loops:
+
+```{r}
+loops(2, Jacobian)
+```
+For long loops (more than 4 links), it takes a while to compute.
+ 
 #### Total feedback values
 
-We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n $ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. Note that the exact way in which feedback loop strengths must be combined arises from the calculation of the determinant of the Jacobian matrix. For a more detailed derivation see Levins 1974
+We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n $ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. 
 
-Based on this measure, Levins derives two conditions for the local stability of a dynamic equilibrium: (1) The total feedback Fk at each level k within the system must be negative and (2) negative feedback at higher levels must be balanced with negative feedback at lower levels.While the concept of feedback loops and the idea that there has to be a balance between positive and negative feedback is fairly intuitive, the number of possible loops increases factorially with the number of species in the system and the way in which loops are combined becomes increasingly complicated. However, Fk can be used to determine system stability because it is connected to the eigenvalues of a system via the characteristic polynomial of the Jacobian matrix A, whose roots are the eigenvalues and whose coefficients are the total feedback values (Brooks 2006). This connection can be used to quantify the feedback structure within larger communities. 
+For  larger  systems  and  total  feedbacks  at  higher  levels  of  organisations,  the  way  in  which the feedback loops must be combined becomes increasingly complicated.  However, it has beenshown  that  the characteristic  polynomial  of  the  Jacobian  matrix  can  be  used  to  calculate  total feedback  values. The  roots  of  the  polynomial  are  the  eigenvalues,  while  the  coefficients are formed combinations of matrix elements which correspond to the total feedback values (Brooks,2006). The calculation of the characteristic polynomial is already implemented in the *charpoly()* function of the R-package *pracma*. 
+
+The function *get_Fk(k,A)* is a wrapper around this function, that picks the right coefficienct that corresponds to the total feedback at a given level k: 
+
+```{r}
+#calculate total feedback at level 3: 
+get_Fk(3, Jacobian)
+```
+
+ 
 
 
