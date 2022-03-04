@@ -46,13 +46,14 @@ replace_zeros <- function(Jac, f){
 #'diagonal ! First, replace missing elements with replace_zeros(). 
 #'
 #'@param A A Jacobian matrix, with non-zero diagonal elements
+#'@param aii determines the value of diagonal elements 
 #'
 #'@return The same Jacobian matrix with scaled interaction strengths and -1 on the diagonal 
 #'
 #'@export
 #'
 
-scale_matrix <- function(A){
+scale_matrix <- function(A, aii = 0){
   
   #extract diagonal values
   diagonal <- diag(A)
@@ -63,7 +64,7 @@ scale_matrix <- function(A){
   A_scaled <- A * d_inv
   
   #set diagonal to 0 
-  diag(A_scaled) <- 0
+  diag(A_scaled) <- aii
   
   return(A_scaled)
 }
