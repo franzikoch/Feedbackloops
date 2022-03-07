@@ -25,7 +25,7 @@ scaled_table <- scaled_table %>%
   randomise_asymmetric_hierarchical(ij_col = "a_ij_scaled", ji_col = "a_ji_scaled")
 
 #assembled scaled randomised Jacobians
-Jacobian_rand <- assemble_jacobian(scaled_table, abundance[,1], "a_ij_rand", "a_ij_rand")
+Jacobian_rand <- assemble_jacobian(scaled_table, abundance[,1], "a_ij_rand", "a_ji_rand")
 Jacobian_pw <- assemble_jacobian(scaled_table, abundance[,1], "a_ij_pw", "a_ji_pw")
 Jacobian_asymmetric <- assemble_jacobian(scaled_table, abundance[,1], "a_ij_asym", "a_ji_asym")
 Jacobian_asymmetric_hierarchical <- assemble_jacobian(scaled_table, abundance[,1], "a_ij_asym_h", "a_ji_asym_h")
