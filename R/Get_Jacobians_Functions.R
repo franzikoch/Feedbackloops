@@ -214,6 +214,14 @@ interaction_strengths <- function(competition, abundance, cost_list){
 #' 
 assemble_jacobian <- function(interaction_table, species_list, ij_col, ji_col){
   
+  #some defensive programming: 
+  #check if specified columns exist, raise an error if not
+  if((ij_col %in% colnames(interaction_table))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(interaction_table))==FALSE){stop('ij_col does not exist')}
+  
+  #print a warning if the two specified columns are the same:
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+  
   n <- length(species_list) #length of species list gives us the matrix size
   
   Jacobian <- matrix(0, nrow = n, ncol = n) #intialise a matrix in the correct size,

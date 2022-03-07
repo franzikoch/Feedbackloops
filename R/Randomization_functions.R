@@ -280,8 +280,8 @@ randomise_asymmetric <- function(it, ij_col, ji_col){
   
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
-  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
-  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  if((ij_col %in% colnames(it))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(it))==FALSE){stop('ij_col does not exist')}
   
   #print a warning if the two specified columns are the same:
   if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
@@ -366,11 +366,11 @@ randomise_asymmetric <- function(it, ij_col, ji_col){
 #' @export
 
 randomise_asymmetric_hierarchical <- function(it, ij_col, ji_col){
-  
+ 
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
-  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
-  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  if((ij_col %in% colnames(it))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(it))==FALSE){stop('ij_col does not exist')}
   
   #print a warning if the two specified columns are the same:
   if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
