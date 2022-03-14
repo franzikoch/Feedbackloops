@@ -143,7 +143,7 @@ randomize_pw <- function(df, ij_col, ji_col){
 #' and $F_ji_B_pw2, that contain randomised interaction strengths
 #' 
 #' @export
-randomize_pw2 <- function(df){
+randomize_pw2 <- function(df, ij_col, ji_col){
   ###Implements pairwise randomizations of interaction strengths in df 
   
   #some defensive programming: 
