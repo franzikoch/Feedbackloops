@@ -276,7 +276,7 @@ assemble_jacobian_randomized <- function(df, species_list, column){
 #' 
 #' @export
 
-randomise_asymmetric <- function(it, ij_col, ji_col){
+randomize_asymmetric <- function(it, ij_col, ji_col){
   
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
@@ -365,7 +365,7 @@ randomise_asymmetric <- function(it, ij_col, ji_col){
 #' 
 #' @export
 
-randomise_asymmetric_hierarchical <- function(it, ij_col, ji_col){
+randomize_asymmetric_hierarchical <- function(it, ij_col, ji_col){
  
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
