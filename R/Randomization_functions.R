@@ -138,6 +138,8 @@ randomize_pw <- function(df, ij_col, ji_col){
 #' should avoid the creation of strong intransitive loops ? Not really well tested though
 #' 
 #' @param df interaction table (created by interaction_strengths)
+#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
+#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
 #' @return the same interaction table but with two additional columns $F_ij_B_pw2 
 #' and $F_ji_B_pw2, that contain randomised interaction strengths
