@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(pracma)
 library(Feedbackloops)
+library(purrr)
 ```
 
 
@@ -204,6 +205,6 @@ head(results)
 To repeat this analysis for a set of networks, combine all interaction_tables in a list and apply the randomise() function to each element of the list, e.g. with purrr:map_dfr() (see example scripts)
 
 ```{r, eval = FALSE}
-full_results <- pmap_dfr(list(interaction_tables, species_names_list, names_sans), randomise, iterations, 0.1 )
+full_results <- purrr:pmap_dfr(list(interaction_tables, species_names_list, names_sans), randomise, iterations, 0.1 )
 ```
 

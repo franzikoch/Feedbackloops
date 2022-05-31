@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(Feedbackloops)
+library(purrr)
 
 #load an example Jacobian matrix
 contact_matrix <- read_contact_matrix("Competition_Signy_1.csv")
