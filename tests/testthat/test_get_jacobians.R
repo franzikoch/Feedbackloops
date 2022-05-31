@@ -1,17 +1,21 @@
 #format species contact matrix and abundance list
 testthat::test_that("Read in data functions", {
-  competition_path <- "Competition_Signy_1.csv"
-  abundance_path <- "Abundance_Signy_1.csv"
+  
+  competition_path <- test_path("Competition_Signy_1.csv")
+  abundance_path <- test_path("Abundance_Signy_1.csv")
   
   expect_snapshot(read_contact_matrix(competition_path))
+  
+  contact_matrix <- read_contact_matrix(competition_path)
+  
   expect_snapshot(read_abundance(abundance_path, contact_matrix))
 })
 
 #calculation of interaction strengths
 testthat::test_that("Calculation interaction strength table", {
   
-  competition_path <- "Competition_Signy_1.csv"
-  abundance_path <- "Abundance_Signy_1.csv"
+  competition_path <- test_path("Competition_Signy_1.csv")
+  abundance_path <- test_path("Abundance_Signy_1.csv")
   
   contact_matrix <- read_contact_matrix(competition_path)
   abundance <- read_abundance(abundance_path, contact_matrix)
@@ -22,8 +26,8 @@ testthat::test_that("Calculation interaction strength table", {
 #assemble the Jacobian matrix
 testthat::test_that("Assemble a Jacobian matrix", {
   
-  competition_path <- "Competition_Signy_1.csv"
-  abundance_path <- "Abundance_Signy_1.csv"
+  competition_path <- test_path("Competition_Signy_1.csv")
+  abundance_path <- test_path("Abundance_Signy_1.csv")
   
   contact_matrix <- read_contact_matrix(competition_path)
   abundance <- read_abundance(abundance_path, contact_matrix)
