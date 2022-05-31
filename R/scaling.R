@@ -84,15 +84,18 @@ scale_matrix <- function(A, aii = 0){
 #' @return interaction table data.frame with two new columns a_ij_scaled and a_ji_scaled
 #' 
 #' @export
+#' @importFrom rlang .data
 #' 
 scale_interaction_table <- function(interaction_table, r_factor){
+  
+  Species_i <- Species_j <- . <- NULL
   
   #missing diagonal values are replaced by mean_aij* replacement
   
   #calculate mean interspecific interaction strengths
   mean_aij <- interaction_table %>% 
-    dplyr::filter(Species_i != Species_j) %>% 
-    dplyr::select(a_ij, a_ji) %>% 
+    dplyr::filter(.data$Species_i != .data$Species_j) %>% 
+    dplyr::select(.data$a_ij, .data$a_ji) %>% 
     unlist() %>% mean()
   
   a_ij_scaled <- vector("numeric", length = nrow(interaction_table))
