@@ -95,7 +95,19 @@ The function *loops(n, A)* calculates the strengths and weights of all loops of 
 ```{r}
 loops(2, Jacobian)
 ```
-For long loops (more than 4 links), it takes a while to compute.
+For long loops (more than 4 links), it takes a while to compute. To save time use the *loops_parallel()* function in order to run the calculation on more than one core (Does not work on windows at the moment) : 
+
+```{r}
+tictoc::tic()
+l <- loops_parallel(7, Jacobian, n_cores = 4)
+tictoc::toc()
+```
+```{r}
+tictoc::tic()
+l <- loops(7, Jacobian)
+tictoc::toc()
+```
+
  
 #### Total feedback values
 
