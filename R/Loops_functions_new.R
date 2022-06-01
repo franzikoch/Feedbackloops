@@ -58,6 +58,7 @@ loop_weight <- function(loop, A){
 #'
 
 loops <- function(n, A){
+  
   #find all loops of length n in the matrix
   #and calculate their strengths as loop weights
   
@@ -67,12 +68,85 @@ loops <- function(n, A){
   comb <- utils::combn(c(1:N), n, simplify = FALSE)
   
   #initialise a data frame to store the results for all subsets 
-  r <- data.frame(species_sequence = character(),
-                  loop_strength = numeric(), 
-                  loop_weight = numeric())
+  #r <- data.frame(species_sequence = character(),
+  #                loop_strength = numeric(), 
+  #                loop_weight = numeric())
+  datalist <- list()
   
   #loop through all n-species subsets and calculate loop weights
   for (i in seq_along(comb)){
+    
+    subset_i <- comb[[i]] #pick one n-species subset 
+    start_species <- subset_i[1] #what is the first species in the list?
+    
+    all_loops <- gtools::permutations(n,n,subset_i)
+    
+    #only those permutations that begin with the start_species are unique feedback loops
+    all_loops <- all_loops[all_loops[,1]==start_species,]
+    
+    #for 2-link loops, there is only one loop per subset
+      if(n == 2){
+        all_weights <- loop_weight(all_loops, A)
+      } else {
+      
+        #for longer loops there are several loops per subset
+        #purrr is used to apply the loop weights function to each of them 
+      
+        #turn all loops into a list of vectors first
+        all_loops_list <- as.list(as.data.frame(t(all_loops)))
+      
+        #apply loop weights function to each element of the list
+        all_weights <- purrr::map_dfr(all_loops_list, loop_weight, A)
+      }
+    
+    datalist[[i]] <- all_weights
+    #add loop weights to the data frame 
+    #r <- rbind(r, all_weights)
+  }
+  
+  r <- dplyr::bind_rows(datalist)
+  #remove zeros from the list 
+  r <- r[r$loop_strength != 0,]
+  
+  return(r)
+}
+
+
+#'Calculates the strengths and weights of all loops of length n within the matrix A
+#'
+#'Same function as loops() but calculations can be run on multiple cores
+#'(setup of parallel backend only works on Linux!!!)
+#'
+#'@param n loop length
+#'@param A a Jacobian matrix in which all loops of length should be identified
+#'@param n_cores number of cores used for computation
+#'
+#'@return A dataframe containing the loops, their strengths and weights
+#'
+#'@importFrom foreach %dopar%
+#'
+#'@export
+#'
+
+loops_parallel <- function(n, A, n_cores){
+  
+  i <- NULL #bind variable to avoid warnings 
+  
+  #set up parallel backend
+  doMC::registerDoMC(n_cores)
+  
+  #find all loops of length n in the matrix
+  #and calculate their strengths as loop weights
+  
+  N <- nrow(A)  #number of species in the community 
+  
+  #combn returns a list of all unique n-species subsets of the network
+  comb <- utils::combn(c(1:N), n, simplify = FALSE)
+  
+  datalist <- list()
+  
+  #loop through all n-species subsets and calculate loop weights
+  datalist <- foreach::foreach (i = seq_along(comb)) %dopar% {
     
     subset_i <- comb[[i]] #pick one n-species subset 
     start_species <- subset_i[1] #what is the first species in the list?
@@ -97,10 +171,9 @@ loops <- function(n, A){
       all_weights <- purrr::map_dfr(all_loops_list, loop_weight, A)
     }
     
-    #add loop weights to the data frame 
-    r <- rbind(r, all_weights)
   }
   
+  r <- dplyr::bind_rows(datalist)
   #remove zeros from the list 
   r <- r[r$loop_strength != 0,]
   

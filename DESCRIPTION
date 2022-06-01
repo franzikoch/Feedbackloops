@@ -18,6 +18,8 @@ Imports:
     magrittr, 
     pracma, 
     purrr,
+    doMC, 
+    foreach,
     usethis,
     gtools,
     rlang
