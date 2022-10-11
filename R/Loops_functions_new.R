@@ -35,8 +35,8 @@ loop_weight <- function(loop, A){
   
   #calculate loop strength and loop weight
   #loop strength = absolute product of all coefficients 
-  strength = abs(prod(coefficients))
-  weight = strength^(1/l)
+  strength = prod(coefficients)
+  weight = abs(strength)^(1/l) * sign(strength)
   
   return(data.frame(species_sequence = paste(as.character(loop), collapse = " "),
                     loop_strength = strength, loop_weight= weight))
