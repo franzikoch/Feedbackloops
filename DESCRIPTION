@@ -1,13 +1,13 @@
 Package: Feedbackloops
 Title: Feedback loop analysis for competition networks
-Version: 0.0.0.9000
+Version: 1.0
 Authors@R: 
     person(given = "Franzi",
-           family = "Last",
+           family = "Koch",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "franziska.koch@uni-hohenheim.de",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: Tools to analyse the stability and feedback structure of ecological networks.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -18,7 +18,6 @@ Imports:
     magrittr, 
     pracma, 
     purrr,
-    doMC, 
     foreach,
     usethis,
     gtools,
@@ -26,6 +25,7 @@ Imports:
 Suggests: 
     rmarkdown,
     tictoc,
+    doMC, 
     knitr,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
