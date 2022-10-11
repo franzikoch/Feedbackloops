@@ -29,7 +29,7 @@ testthat::test_that("Calculation of loop weights", {
   list_l3 <- loops(3, Jacobian)[[2]]
   
   expect_equal(max(list_l2), 0.005826275, tolerance = 0.0001)
-  expect_equal(max(list_l3), 0.0002187744, tolerance = 0.0001)
+  expect_equal(max(abs(list_l3)), 0.0002187744, tolerance = 0.0001)
 })
 
 testthat::test_that("Calculation of total feedback", {
@@ -47,7 +47,7 @@ testthat::test_that("Calculation of total feedback", {
   Jacobian_scaled <- scale_matrix(Jacobian)
   
   expect_equal(sum(loops(2, Jacobian_scaled)$loop_strength),  get_Fk(2, Jacobian_scaled))
-  expect_equal(sum(loops(3, Jacobian_scaled)$loop_strength),  abs(get_Fk(3, Jacobian_scaled)))
+  expect_equal(sum(loops(3, Jacobian_scaled)$loop_strength),  get_Fk(3, Jacobian_scaled))
   
 })
 
@@ -59,7 +59,7 @@ testthat::test_that("Calculation of loop weights (parallelised)", {
   list_l3 <- loops_parallel(3, Jacobian, 2)[[2]]
   
   expect_equal(max(list_l2), 0.005826275, tolerance = 0.0001)
-  expect_equal(max(list_l3), 0.0002187744, tolerance = 0.0001)
+  expect_equal(max(abs(list_l3)), 0.0002187744, tolerance = 0.0001)
 })
 
 testthat::test_that("Calculation of total feedback (parallelised)", {
@@ -77,6 +77,6 @@ testthat::test_that("Calculation of total feedback (parallelised)", {
   Jacobian_scaled <- scale_matrix(Jacobian)
   
   expect_equal(sum(loops_parallel(2, Jacobian_scaled, 2)$loop_strength),  get_Fk(2, Jacobian_scaled))
-  expect_equal(sum(loops_parallel(3, Jacobian_scaled, 2)$loop_strength),  abs(get_Fk(3, Jacobian_scaled)))
+  expect_equal(sum(loops_parallel(3, Jacobian_scaled, 2)$loop_strength),  get_Fk(3, Jacobian_scaled))
   
 })
