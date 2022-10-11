@@ -131,122 +131,56 @@ randomize_pw <- function(df, ij_col, ji_col){
 
 
 
-#' Second version of pairwise randomisation procedure
+##' Second version of pairwise randomisation procedure
 #' 
 #' In this version, pairs are randomly reshuffled but F_ji and F_ij values cannot 
 #' be switched!! Thus values always stay on one side of the matrix diagonal, which 
 #' should avoid the creation of strong intransitive loops ? Not really well tested though
 #' 
-#' @param df interaction table (created by interaction_strengths)
-#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
-#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
-#' 
-#' @return the same interaction table but with two additional columns $F_ij_B_pw2 
-#' and $F_ji_B_pw2, that contain randomised interaction strengths
-#' 
-#' @export
-randomize_pw2 <- function(df, ij_col, ji_col){
+#randomize_pw2 <- function(df, ij_col, ji_col){
   ###Implements pairwise randomizations of interaction strengths in df 
   
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
-  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
-  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+#  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+#  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
   
   #print a warning if the two specified columns are the same:
-  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+#  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
   
   #add two new columns to df to store randomized interaction pairs
-  z = length(df$Species_i)
-  df$F_ij_B_pw2 <- vector("numeric", z)
-  df$F_ji_B_pw2 <- vector("numeric", z)
+#  z = length(df$Species_i)
+#  df$F_ij_B_pw2 <- vector("numeric", z)
+#  df$F_ji_B_pw2 <- vector("numeric", z)
   
   #pick all interspecific interactions from df 
   #(intraspecific interactions are not randomized)
-  df_inter <-  df[df$Species_i != df$Species_j,]
+#  df_inter <-  df[df$Species_i != df$Species_j,]
   
-  n = length(df_inter$Species_i)
+#  n = length(df_inter$Species_i)
   #each entry of pw_list is one pair of interaction strengths
-  pw2_list <- vector("list", length = n)
+#  pw2_list <- vector("list", length = n)
   
-  for (i in 1:n){
+#  for (i in 1:n){
     #in this version we do not randomly exchange F_ji and F_ij
     #so that all F_ji stay below the diagonal and all F_ij stay above it
-    pw2_list[[i]] <- c(df_inter$F_ij_B[i], df_inter$F_ji_B[i])
-  }
+#    pw2_list[[i]] <- c(df_inter$F_ij_B[i], df_inter$F_ji_B[i])
+#  }
   #randomize the order of list items
-  pw2_list <- sample(pw2_list)
+#  pw2_list <- sample(pw2_list)
   
   #fill the shuffeled items into the df_inter
-  for (i in 1:n){
-    df_inter$F_ij_B_pw2[i] <- pw2_list[[i]][1]
-    df_inter$F_ji_B_pw2[i] <- pw2_list[[i]][2]
-  }
+#  for (i in 1:n){
+#    df_inter$F_ij_B_pw2[i] <- pw2_list[[i]][1]
+#    df_inter$F_ji_B_pw2[i] <- pw2_list[[i]][2]
+#  }
   #sort df_inter values back into the original df 
-  df[df$Species_i != df$Species_j,] <- df_inter
+#  df[df$Species_i != df$Species_j,] <- df_inter
   
-  return(df)
-}
+#  return(df)
+#}
 
 
-#' Constructs a Jacobian matrix with randomised interaction strengths
-#' 
-#' This is not needed anymore! assemble_jacobian now works with randomised dataframes as well!!
-#' 
-#' @param df interaction table, containing columns with randomised interaction strengths
-#' @param species_list list of species names (can be taken from abundance table)
-#' @param column name specifying which columns of interaction strengths should be used to assemble the matrix
-#' 
-#' @return a Jacobian matrix 
-
-assemble_jacobian_randomized <- function(df, species_list, column){
-  
-  ##Used to generate a randomized version of the Jacobian matrix 
-  ##Use the parameter column to specify the randomization type:
-  ##if column = "random", all interaction strengths are exchanged (except for intraspecific ones)
-  ##if column = "pw", pairwise interactions are randomized
-  ##in both cases the topology stays the same -> 0's in the original Jacobian 
-  ##stay 0 in the randomized versions 
-  
-  ##prepare a dataframe to fill:
-  n <- length(species_list)
-  Jacobian<- as.data.frame(matrix(nrow = n, ncol = n), stringsAsFactors = FALSE)
-  rownames(Jacobian)<- species_list
-  colnames(Jacobian)<- species_list
-  
-  for (i in 1:n){#loops through the rows of the matrix
-    row_species <- species_list[i]
-    for (j in 1:n){#loops through the columns of the matrix
-      column_species <- species_list[j]
-      #select row in df with the corresponding species_i and species_j
-      r<- df[(df$Species_i == row_species & df$Species_j == column_species),]
-      #check if r contains data (if not, the two species did not interact)
-      if (nrow(r) > 0){
-        if (i == j){ #when on the diagonal, use intraspecific coefficient
-          Jacobian[i,j] <- r$F_ii_B
-        } else if (column == "random"){
-          #F_ij_B_rand values can be used to fill the matrix above the diagonal
-          Jacobian[i,j] <- r$F_ij_B_rand
-          #F_ji_B_rand values can be used to fill the matrix below the diagonal
-          Jacobian[j,i]<- r$F_ji_B_rand
-        } else if (column == "pw"){
-          #F_ij_B_pw values can be used to fill the matrix above the diagonal
-          Jacobian[i,j] <- r$F_ij_B_pw
-          #F_ji_B_pw values can be used to fill the matrix below the diagonal
-          Jacobian[j,i]<- r$F_ji_B_pw 
-        } else if (column == "pw2"){
-          #F_ij_B_pw values can be used to fill the matrix above the diagonal
-          Jacobian[i,j] <- r$F_ij_B_pw2
-          #F_ji_B_pw values can be used to fill the matrix below the diagonal
-          Jacobian[j,i]<- r$F_ji_B_pw2 
-      }else{print("Invalid column specified")}
-    }#end of nrow(r) > 0 condition
-    }#end of inner loop
-    }#end of outer loop
-  #turn NAs into zeros 
-  Jacobian[is.na(Jacobian)]<-0
-  return(Jacobian)
-}
 
 
 #' Randomise a community matrix to have perfect asymmetry 
