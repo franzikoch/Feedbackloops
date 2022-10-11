@@ -58,7 +58,7 @@ As our community matrix is unstable, it needs additional self-regulation to beco
 ### Scaling interaction strengths
 
 
-$Re(\lambda_d)$ can be directly used to compare the stability on different matrices only if they have the same uniform diagonal. However, the strength of self-regulation differs a lot within and between empirical networks. Following the approach of Neutel and Thorne (2014) to deal with this problem: The interspecific interaction strengths are normalized by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix A onto the off-diagonal structure, which facilitates comparison of stability at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures. The resulting scaled matrix has the elements and a uniform diagonal of $-1$. 
+$Re(\lambda_d)$ can be directly used to compare the stability on different matrices only if they have the same uniform diagonal. However, the strength of self-regulation differs a lot within and between empirical networks. We follow the approach of Neutel and Thorne (2014) to deal with this problem: The interspecific interaction strengths are normalized by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix $\mathbf{A}$ onto the off-diagonal structure, which facilitates comparison of stability at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures. The resulting scaled matrix has the elements and a uniform diagonal of $-1$. 
 
 After the diagonal has been set to 0, the real part of the dominant eigenvalues of the scaled matrix can be used to directly compare system stability, because it is linked to the critical amount of self-regulation s* of the system (Neutel 2014, 2021). 
 
@@ -88,7 +88,7 @@ Feedback loops are circuits of effects, caused by mutual interactions between sp
 
 #### Loop weights
 
-The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and the values are hard to compare for loops of different lengths. We use Neutel 2002's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
+The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and hard to compare for loops of different lengths. We use Neutel 2002's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
 
 The function *loops(n, A)* calculates the strengths and weights of all loops of given length $n$ within the matrix $\mathbf{A}$ and returns a dataframe containing the strength (product of all links) and weights (geometric mean of al links) of all loops:
 
@@ -99,7 +99,7 @@ For long loops (more than 4 links), it takes a while to compute. To save time us
 
 ```{r}
 tictoc::tic()
-l <- loops_parallel(7, Jacobian, n_cores = 4)
+l <- loops_parallel(7, Jacobian, n_cores = 2)
 tictoc::toc()
 ```
 ```{r}
@@ -111,9 +111,9 @@ tictoc::toc()
  
 #### Total feedback values
 
-We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n $ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. 
+We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n$ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. 
 
-For  larger  systems  and  total  feedbacks  at  higher  levels  of  organisations,  the  way  in  which the feedback loops must be combined becomes increasingly complicated.  However, it has beenshown  that  the characteristic  polynomial  of  the  Jacobian  matrix  can  be  used  to  calculate  total feedback  values. The  roots  of  the  polynomial  are  the  eigenvalues,  while  the  coefficients are formed combinations of matrix elements which correspond to the total feedback values (Brooks,2006). The calculation of the characteristic polynomial is already implemented in the *charpoly()* function of the R-package *pracma*. 
+For  larger  systems  and  total  feedbacks  at  higher  levels  of  organisations,  the  way  in  which the feedback loops must be combined becomes increasingly complicated.  However, it has beenshown  that  the characteristic  polynomial  of  the  Jacobian  matrix  can  be  used  to  calculate  total feedback  values. The  roots  of  the  polynomial  are  the  eigenvalues,  while  the  coefficients are formed combinations of matrix elements which correspond to the total feedback values (Brooks, 2006). The calculation of the characteristic polynomial is already implemented in the *charpoly()* function of the R-package *pracma*. 
 
 The function *get_Fk(k,A)* is a wrapper around this function, that picks the right coefficienct that corresponds to the total feedback at a given level k: 
 

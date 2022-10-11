@@ -46,13 +46,6 @@ contact_matrix <- read_contact_matrix(path_competition)
 abundance <- read_abundance(path_abundance, contact_matrix)
 ```
 
-Here, we use the example data set provided with this package: 
-```{r}
-#load example data set
-#data("contact_matrix")
-#data("abundance")
-```
-
 The competition table/species-contact matrix should look like this: 
 
 ```{r}
@@ -65,7 +58,11 @@ head(abundance)
 ```
 ## Create a table of pairwise interactions, calculate biomass loss rates and interaction strengths
 
-To make calculations easier, the function **interaction_strengths(competition_table, abundance_table, cost_list)** first converts the competition matrix to data.frame with one row for each pairwise interaction. In this format, the biomass loss rate of species $i$ due to competition with species $j$ can easily be calculated with the following formula: $F_{ij} = c_W W_{ij} + c_L L_{ij} + c_D D_{ij}$, where $W_{ij}$, $L_{ij}$ and $D_{ij}$ represent the number of wins, losses and ties for species $i$ in confrontation with species $j$ and $c_W$, $c_L$ and $c_D$ are the so-called cost-values. Cost-values are the fixed amount of lost biomass assigned to each type of competitive outcome. In the case of intraspecific interactions (species $i$ == species $j$), draws need to be counted twice, as such an interaction affects two colonies but only one confrontation is recorded in the species-contact matrix. For each row in the interaction table, two biomass loss rates ($F_{ij}$ and $F_{ji}$) are calculated. 
+To make calculations easier, the function **interaction_strengths(competition_table, abundance_table, cost_list)** first converts the competition matrix to a data.frame with one row for each pairwise interaction. In this format, the biomass loss rate of species $i$ due to competition with species $j$ can easily be calculated with the following formula: 
+
+$F_{ij} = c_W W_{ij} + c_L L_{ij} + c_D D_{ij}$
+
+where $W_{ij}$, $L_{ij}$ and $D_{ij}$ represent the number of wins, losses and ties for species $i$ in confrontation with species $j$ and $c_W$, $c_L$ and $c_D$ are the so-called cost-values. Cost-values are the fixed amount of lost biomass assigned to each type of competitive outcome. In the case of intraspecific interactions (species $i$ == species $j$), draws need to be counted twice, as such an interaction affects two colonies but only one confrontation is recorded in the species-contact matrix. For each row in the interaction table, two biomass loss rates ($F_{ij}$ and $F_{ji}$) are calculated. 
 
 To convert a given biomass loss rate $F_{ij}$ into interaction strengths (as in the element $a_{ij}$ of the Jacobian matrix), it is simply divided by the abundance $B$ of species $j$: $a_{ij} = \frac{F_{ij}}{B_j}$. 
 
@@ -78,7 +75,7 @@ head(interaction_table)
 
 ## Assembling the Jacobian matrix
 
-We already calculated all elements of the Jacobian in the previous step. The function **assemble_jacobian()** is responsible for putting them in the correct order. The species are ordered according to their position in the abundance table, so that the Jacobian will have the same order as the original species contact matrix. Note that how species are ordered does not affect the eigenvalues / stability of the network. But it is used to assess the competitive ranking of species. 
+We already calculated all elements of the Jacobian in the previous step. The function **assemble_jacobian()** is responsible for putting them in the correct order. The species are ordered according to their position in the abundance table, so that the Jacobian will have the same order as the original species contact matrix. Note that how species are ordered does not affect the eigenvalues / stability of the network. 
 
 **assemble_jacobian()** takes the following arguments:
 

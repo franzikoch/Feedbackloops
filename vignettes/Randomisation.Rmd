@@ -1,6 +1,6 @@
 ---
 title: "Manipulating community matrices"
-output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{Randomisation}
   %\VignetteEngine{knitr::rmarkdown}
