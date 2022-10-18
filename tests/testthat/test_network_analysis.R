@@ -19,6 +19,41 @@ testthat::test_that("Scaling procedure", {
   
 })
 
+testthat::test_that("Calculation of s*", {
+  
+  Jacobian <- as.matrix(read.csv(test_path("Jacobian_Signy_1.csv")))
+  
+  #determine s for an unstable matrix 
+  s <- find_s(Jacobian, step_size = 0.01)
+  
+  expect_equal(s, 2.78)
+  
+  #compare to lamdba_d of the scaled matrix
+  Jac_scaled <- scale_matrix(Jacobian)
+  lambda_d <- eigen(Jac_scaled)$values %>% Re() %>% max()
+  
+  expect_equal(s, lambda_d, tolerance = 0.1)
+  
+  #determine s for a stable matrix
+  
+  #create a stable matrix by increasing the diagonal 
+  original_diag <- diag(Jacobian)
+  Jac_stable <- Jacobian
+  diag(Jac_stable) <- original_diag * 5
+  
+  s_stable <- find_s(Jac_stable)
+  
+  #check value
+  expect_equal(s_stable, 0.55)
+  
+  #compare to lambda_d of the scaled matrix
+  Jac_stable_scaled <- scale_matrix(Jac_stable)
+  lambda_d_stable <- eigen(Jac_stable_scaled)$values %>% Re() %>% max()
+  
+  expect_equal(s_stable, lambda_d_stable, tolerance = 0.1)
+  
+  })
+
 
 
 testthat::test_that("Calculation of loop weights", {
