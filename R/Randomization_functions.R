@@ -131,54 +131,57 @@ randomize_pw <- function(df, ij_col, ji_col){
 
 
 
-##' Second version of pairwise randomisation procedure
+#' Minimal randomisation procedure
 #' 
-#' In this version, pairs are randomly reshuffled but F_ji and F_ij values cannot 
-#' be switched!! Thus values always stay on one side of the matrix diagonal, which 
-#' should avoid the creation of strong intransitive loops ? Not really well tested though
-#' 
-#randomize_pw2 <- function(df, ij_col, ji_col){
-  ###Implements pairwise randomizations of interaction strengths in df 
+#' In this version, pairs are kept together and their orientation compared to the
+#' matrix diagonal is also preserved. This means that both pairwise as well as
+#' community asymmetry is retained. 
+randomize_minimal <- function(df, ij_col, ji_col){
   
   #some defensive programming: 
   #check if specified columns exist, raise an error if not
-#  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
-#  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
+  if((ij_col %in% colnames(df))== FALSE){stop('ij_col does not exist')}
+  if((ji_col %in% colnames(df))==FALSE){stop('ij_col does not exist')}
   
   #print a warning if the two specified columns are the same:
-#  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
+  if(ij_col == ji_col){warning("ij_col and ji_col are identical!")}
   
   #add two new columns to df to store randomized interaction pairs
-#  z = length(df$Species_i)
-#  df$F_ij_B_pw2 <- vector("numeric", z)
-#  df$F_ji_B_pw2 <- vector("numeric", z)
+  z = length(df$Species_i)
+  df$a_ij_min <- vector("numeric", z)
+  df$a_ji_min <- vector("numeric", z)
   
   #pick all interspecific interactions from df 
   #(intraspecific interactions are not randomized)
-#  df_inter <-  df[df$Species_i != df$Species_j,]
+  df_inter <-  df[df$Species_i != df$Species_j,]
   
-#  n = length(df_inter$Species_i)
+  n = length(df_inter$Species_i)
   #each entry of pw_list is one pair of interaction strengths
-#  pw2_list <- vector("list", length = n)
+  min_list <- vector("list", length = n)
   
-#  for (i in 1:n){
-    #in this version we do not randomly exchange F_ji and F_ij
-    #so that all F_ji stay below the diagonal and all F_ij stay above it
-#    pw2_list[[i]] <- c(df_inter$F_ij_B[i], df_inter$F_ji_B[i])
-#  }
-  #randomize the order of list items
-#  pw2_list <- sample(pw2_list)
+  for (i in 1:n){
+    
+    col1 <- df_inter[[ij_col]]
+    col2 <- df_inter[[ji_col]]
+    
+    #in contrast to the pairwise randomisation, values are 
+    #not randomised between columns
+    min_list[[i]] <- c(col1[i], col2[i])
+  }
+  #randomize the order of list items -> where in the matrix the pairs are located
+  min_list <- sample(min_list)
   
   #fill the shuffeled items into the df_inter
-#  for (i in 1:n){
-#    df_inter$F_ij_B_pw2[i] <- pw2_list[[i]][1]
-#    df_inter$F_ji_B_pw2[i] <- pw2_list[[i]][2]
-#  }
+  for (i in 1:n){
+    df_inter$a_ij_min[i] <- min_list[[i]][1]
+    df_inter$a_ji_min[i] <- min_list[[i]][2]
+  }
   #sort df_inter values back into the original df 
-#  df[df$Species_i != df$Species_j,] <- df_inter
+  df[df$Species_i != df$Species_j,] <- df_inter
   
-#  return(df)
-#}
+  return(df)
+}
+
 
 
 

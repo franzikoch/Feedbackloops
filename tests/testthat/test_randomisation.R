@@ -14,18 +14,21 @@ testthat::test_that("Randomisation functions", {
   expect_snapshot(randomize_pw(interaction_table, "a_ij", "a_ji"))
   expect_snapshot(randomize_asymmetric(interaction_table, "a_ij", "a_ji"))
   expect_snapshot(randomize_asymmetric_hierarchical(interaction_table, "a_ij", "a_ji"))
+  expect_snapshot(randomize_minimal(interaction_table, "a_ij", "a_ji"))
   
   #error should be thrown when aij/ aji col does not exist
   expect_error(randomize_all(interaction_table, "aij", "a_ji"), "ij_col does not exist")
   expect_error(randomize_pw(interaction_table, "aij", "a_ji"), "ij_col does not exist")
   expect_error(randomize_asymmetric(interaction_table, "aij", "a_ji"), "ij_col does not exist")
   expect_error(randomize_asymmetric_hierarchical(interaction_table, "aij", "a_ji"), "ij_col does not exist")
+  expect_error(randomize_minimal(interaction_table, "aij", "a_ji"), "ij_col does not exist")
   
   #error should be thrown when aij == aji 
   expect_warning(randomize_all(interaction_table, "a_ij", "a_ij"), "ij_col and ji_col are identical!")
   expect_warning(randomize_pw(interaction_table, "a_ij", "a_ij"), "ij_col and ji_col are identical!")
   expect_warning(randomize_asymmetric(interaction_table, "a_ij", "a_ij"), "ij_col and ji_col are identical!")
   expect_warning(randomize_asymmetric_hierarchical(interaction_table, "a_ij", "a_ij"), "ij_col and ji_col are identical!")
+  expect_warning(randomize_minimal(interaction_table, "a_ij", "a_ij"), "ij_col and ji_col are identical!")
 })
 
 
