@@ -9,24 +9,23 @@ randomize_all(df, ij_col, ji_col)
 \arguments{
 \item{df}{interaction table (created by interaction_strenghts())}
 
-\item{ij_col}{column of a_ij values to randomise (choose scaled or unscaled)}
+\item{ij_col}{column of \eqn{a_{ij}} values to randomise (choose scaled or unscaled)}
 
-\item{ji_col}{column of a_ji values to randomise (scaled or unscaled)}
+\item{ji_col}{column of \eqn{a_{ji}} values to randomise (scaled or unscaled)}
 }
 \value{
-the same interaction table but with two additional columns $a_ij_B_rand
-and $a_ji_B_rand that contain the same interaction strengths in a randomised order
+interaction table with two additional columns \emph{$a_ij_rand}
+and \emph{$a_ji_rand} that contain the interaction strengths in a randomised order
 }
 \description{
 During the full randomisation procedure, ALL interspecific interaction strengths are randomly
-reshuffled within the network. Intraspecific interactions/ Diagonal values are not affected.
-interaction columns so that an a_ij value can become an a_ji value and
-vice-versa. The function returns a new interaction table
-that contains two columns with randomised interaction strengths.
+reshuffled within the network. Intraspecific interactions, the diagonal matrix elements
+are not affects and network topology is preserved (zeros remain in place).
+}
+\details{
+The function returns a new interaction table that contains two new columns $a_ij_rand and
+$a_ji_rand that contains the same values as the original columns but in a different order.
 
-Use this table as inputto assemble_jacobian() and specify the new columns to get a fully randomised Jacobian matrix.
-Note: values are only randomised across existing links! (the interaction table
-does not contain non-existent links). Thus, if the Jacobian is reconstructed from
-the randomised interaction table, the network will have the same topology as
-the empirical one.
+To get a fully randomised Jacobian matrix, use assemble_jacobian() and specify
+the new columns.
 }

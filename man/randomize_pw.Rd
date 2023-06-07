@@ -2,34 +2,36 @@
 % Please edit documentation in R/Randomization_functions.R
 \name{randomize_pw}
 \alias{randomize_pw}
-\title{Pairiwise randomisation of an interaction table}
+\title{Pairiwise (Weak) randomisation of an interaction table}
 \usage{
 randomize_pw(df, ij_col, ji_col)
 }
 \arguments{
 \item{df}{interaction table (created by interaction_strenghts())}
 
-\item{ij_col}{column of a_ij values to randomise (choose scaled or unscaled)}
+\item{ij_col}{column of \eqn{a_{ij}} values to randomise (choose scaled or unscaled)}
 
-\item{ji_col}{column of a_ji values to randomise (scaled or unscaled)}
+\item{ji_col}{column of \eqn{a_{ji}} values to randomise (scaled or unscaled)}
 }
 \value{
-the same interaction table with additional columns $a_ij_B_pw and $a_ji_B_pw,
+Interaction table with two additional columns \emph{$a_ij_pw} and \emph{$a_ji_pw},
 containing randomised interaction strengths
 }
 \description{
 During pairwise randomisation, pairs of interaction strengths are kept intact but their
-location is reshuffled across the network. In the interaction table this means the following:
-a_ij and a_ji values that appear in the same row in the original table, will also be in the same
-row in the pairwise randomised table(all though it is possible that they switch columns).
-The function returns a new interaction table that contains two columns with randomised interaction strengths.
+location is reshuffled across the network. Intraspecific links and network topology are
+preserved.
 }
 \details{
-Use this table as input to assemble_jacobian() and specify the two new columns
-to get a pairwise randomised Jacobian matrix.
+In the interaction table this means the following: \eqn{a_{ij}} and \eqn{a_{ji}}
+values that appear in the same row in the original table, will also be in the same
+row in the pairwise randomised table. However, they can switch from  \eqn{a_{ij}} to
+\eqn{a_{ji}} and vice versa, which means above-below diagonal orientation can be
+reversed.
 
-Note: values are only randomised across existing links! (the interaction table
-does not contain non-existent links). Thus, if the Jacobian is reconstructed from
-the randomised interaction table, the network will have the same topology as
-the empirical one!
+The function returns a new interaction table that contains two new columns $a_ij_pw and
+$a_ji_pw that contains the same values as the original columns but in a different order.
+
+To get a pairwise randomised Jacobian matrix, use assemble_jacobian() and specify
+the new columns.
 }

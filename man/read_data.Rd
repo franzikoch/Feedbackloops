@@ -2,7 +2,7 @@
 % Please edit documentation in R/Get_Jacobians_Functions.R
 \name{read_data}
 \alias{read_data}
-\title{Reads in the raw data files and returns data frames that are more easy to work with in R.}
+\title{Read in the raw data files}
 \usage{
 read_data(path_competition, path_abundance)
 }
@@ -12,12 +12,13 @@ read_data(path_competition, path_abundance)
 \item{path_abundance}{path to abundance .csv file}
 }
 \value{
-A list containing a competition data frame, that contains the
-species contact matrix and a cleaned abundance table (missing species are omitted +
-same order as competition table)
+A list containing two data frames: the
+species contact matrix and a cleaned abundance table
 }
 \description{
 Competition and abundance data must be read in together, to make sure that species match.
-(in Daves raw data tables, the abundance data sometimes contains species that are not in
-the species contact matrix)
+Some species may appear in the abundance table but not in the species contact matrix,
+because they do not interact with anyone yet). These species are dropped from the list.
+Species in the abundance table are also reordered to match the order of species
+in the species contact matrix.
 }
