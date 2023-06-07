@@ -1,6 +1,7 @@
 ---
 title: "Analysing the properties of competition networks"
 output: rmarkdown::html_vignette
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Network_analysis}
   %\VignetteEngine{knitr::rmarkdown}
@@ -41,9 +42,11 @@ print(lambda_d)
 ```
 Our example matrix has a positive real part, which means that it is unstable. 
 
-$Re(\lambda_d)$ tells us whether a given system is stable or not, but it cannot be used to directly compare the stability of different matrices. To do this, we use the concept of critical selfregulation $s^*$(Neutel 2002, 2007). As any community (that has only non-zero diagonal values) can be stabilised by artificially increasing the strength of self-regulation, so that the diagonal values become more negative. We can determine $s^*$ relative to the estimated diagonal values, by mutliplying all diagonal elements with a control parameter $s$ and continously increase $s$ until the matrix becomes stable. The critical amount of self-regulation $s*$ is then the smallest s value that causes the real parts of all eigenvalues to be negative. 
+$Re(\lambda_d)$ tells us whether a given system is stable or not, but it cannot be used to directly compare the stability of different systems, with differing diagonal values. To be able to make this comparison, we use the concept of critical selfregulation $s^*$ [@neutel2002StabilityReal]. s* represents the factor by which observed intraspecific interaction strength has to be multiplied to obtain stability. The metric s* thus describes how far the system is from stability, as a multiplier of the actual amount of self-regulation, in the case of an unstable system ($s* > 1$). In the case of a stable system ($s* < 1$), it indicates how much ‘buffering capacity’ a system has, giving the fraction of observed self-regulation that is enough to provide stability. 
 
-First, we need to replace missing diagonal values with small numbers to make the calculation of $s*$ possible. The *replace_zeros()* function replaces any diagonal element $a_{ii} =0$ with the mean interaction strength of the matrix, multiplied with a factor $f$.  Then, we can calculate the critical amount of self-regulation of a community matrix with the *find_s()* function:
+We determine $s^*$ relative to the estimated diagonal values, by mutliplying all diagonal elements with a control parameter $s$ and continously increase $s$ until the matrix becomes stable. The critical amount of self-regulation $s*$ is then the smallest s value that causes the real parts of all eigenvalues to be negative. 
+
+In order to calculate $s*$ we need to replace missing diagonal values. The *replace_zeros()* function replaces any diagonal element $a_{ii} =0$ with the mean interaction strength of the matrix, multiplied with a factor $f$. Then, we can calculate the critical amount of self-regulation of a community matrix with the *find_s()* function:
 
 ```{r}
 #replace missing diagonals with mean interaction strength * 0.1
@@ -52,17 +55,16 @@ Jacobian <- replace_zeros(Jacobian, f = 0.1)
 s_star <- find_s(Jacobian, step_size = 0.01, max_s = 500)
 print(s_star)
 ```
-As our community matrix is unstable, it needs additional self-regulation to become stable and $s* > 1$. 
 
+As our community matrix is unstable, it needs additional self-regulation to become stable and $s^* > 1$. 
 
 ### Scaling interaction strengths
 
+$Re(\lambda_d)$ can only be used to compare the stability of matrices that with identical diagonal values. However, the strength of self-regulation differs a lot within and between empirical networks. We follow the approach of @neutel2014InteractionStrengths to deal with this problem: The interspecific interaction strengths are normalized (scaled) by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix $\mathbf{A}$ onto the off-diagonal structure, which facilitates comparison of stability (at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures). The resulting scaled matrix $\overline{A}$ has the elements $\frac{a_{ij}}{|a_{ii}|}$ and a uniform diagonal of $-1$. 
 
-$Re(\lambda_d)$ can be directly used to compare the stability on different matrices only if they have the same uniform diagonal. However, the strength of self-regulation differs a lot within and between empirical networks. We follow the approach of Neutel and Thorne (2014) to deal with this problem: The interspecific interaction strengths are normalized by dividing each row in the matrix by the absolute value of its corresponding diagonal term. This translates the diagonal structure of a matrix $\mathbf{A}$ onto the off-diagonal structure, which facilitates comparison of stability at the cost of not knowing whether matrix (in)stability arises from patterns in the diagonal or off-diagonal structures. The resulting scaled matrix has the elements and a uniform diagonal of $-1$. 
+The critical self-regulation $s^*$ can also be obtained by setting the diagonals of the scaled matrix to 0 ($\overline{A_0}$) and then calculating the real part of the dominant eigenvalue [@neutel2014InteractionStrengths; @thorne2021MatrixScaling]. 
 
-After the diagonal has been set to 0, the real part of the dominant eigenvalues of the scaled matrix can be used to directly compare system stability, because it is linked to the critical amount of self-regulation s* of the system (Neutel 2014, 2021). 
-
-We can scale a given Jacobian matrix directly using *scale_matrix()*. The parameter *aii* specifies the value of all diagonal elements (default is 0): 
+A given Jacobian matrix can be scaled directly using *scale_matrix()*. The parameter *aii* specifies the value of all diagonal elements in the scaled matrix (default is 0): 
 
 ```{r}
 scale_matrix(Jacobian, aii = 0)
@@ -88,7 +90,7 @@ Feedback loops are circuits of effects, caused by mutual interactions between sp
 
 #### Loop weights
 
-The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and hard to compare for loops of different lengths. We use Neutel 2002's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
+The strength of a given feedback loop is defined by the product of all links within it. These values are often very small and hard to compare for loops of different lengths. We use @neutel2002StabilityReal 's loop weight measure to make this comparison easier. The weight of a loop is defined as the geometric mean of all interaction strengths within it. 
 
 The function *loops(n, A)* calculates the strengths and weights of all loops of given length $n$ within the matrix $\mathbf{A}$ and returns a dataframe containing the strength (product of all links) and weights (geometric mean of al links) of all loops:
 
@@ -111,9 +113,9 @@ tictoc::toc()
  
 #### Total feedback values
 
-We use Levin's feedback measure to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n$ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. 
+We use Levin's feedback measure [@levins1974QualitativeAnalysis] to understand how the effects of all feedback loops within a network are combined. His measure allows us to calculate the total feedback for a whole system, as well as for all subsystems within it, that form lower levels of organisation. At any given level $k \leq n$ within a system of $n$ species, the total feedback $F_k$ is defined as the sum of the strengths of all feedback loops of length $k$ and that of all combinations of non-overlapping shorter loops containing $k$ elements. 
 
-For  larger  systems  and  total  feedbacks  at  higher  levels  of  organisations,  the  way  in  which the feedback loops must be combined becomes increasingly complicated.  However, it has beenshown  that  the characteristic  polynomial  of  the  Jacobian  matrix  can  be  used  to  calculate  total feedback  values. The  roots  of  the  polynomial  are  the  eigenvalues,  while  the  coefficients are formed combinations of matrix elements which correspond to the total feedback values (Brooks, 2006). The calculation of the characteristic polynomial is already implemented in the *charpoly()* function of the R-package *pracma*. 
+For  larger  systems  and  total  feedbacks  at  higher  levels  of  organisations,  the  way  in  which the feedback loops must be combined becomes increasingly complicated.  However, it has been shown  that  the characteristic  polynomial  of  the  Jacobian  matrix  can  be  used  to  calculate total feedback  values. The  roots  of  the  polynomial  are  the  eigenvalues,  while  the  coefficients are formed combinations of matrix elements which correspond to the total feedback values [@brooks2006CoefficientsCharacteristic]. The calculation of the characteristic polynomial is already implemented in the *charpoly()* function of the R-package *pracma*. 
 
 The function *get_Fk(k,A)* is a wrapper around this function, that picks the right coefficienct that corresponds to the total feedback at a given level k: 
 
@@ -122,6 +124,7 @@ The function *get_Fk(k,A)* is a wrapper around this function, that picks the rig
 get_Fk(3, Jacobian)
 ```
 
+## List of references
  
 
 

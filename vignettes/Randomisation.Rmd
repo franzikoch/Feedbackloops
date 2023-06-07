@@ -21,7 +21,7 @@ library(purrr)
 ```
 
 
-We use manipulation procedures to disentangle the effects of different network structures from each other. Each procedure is designed to destroy certain aspects of the structure of an empirical matrix. By comparing the properties of randomised matrices to empirical matrices, we can analyse the effect of these structural elements. 
+We use manipulation procedures to disentangle the effects of different structural properties. Each procedure is designed to destroy certain aspects of the structure of an empirical matrix. By comparing the properties of randomised matrices to empirical matrices, we can analyse the effect of these structural elements. 
 
 
 ```{r}
@@ -37,8 +37,9 @@ interaction_table <- interaction_strengths(contact_matrix, abundance, c(-0.1, -0
 head(interaction_table)
 ```
 
-Interaction strengths are randomised within the table of pairwise interactions: Each randomisation function adds a two new columns to this interaction table, which contain the same $a_ {ij}$ and $a_{ji}$ values, but their order is randomised according to certain rules. After this the function *assemble_jacobian()* reorders the randomised interaction strengths into the community matrix. This works in the same way as with the empirical matrix, according to the order defined in species list, but it chooses the interaction strengths from the randomised columns. Pairwise interaction appear in the same row of the two columns. Values in the column *a_ij* column are assigned to the lower diagonal of the community matrix, while the values in the *a_ji* column are sorted above the diagonal.  
+The randomisation is implemented within the table of pairwise interactions: Each randomisation function adds two new columns to this interaction table, which contain the same $a_ {ij}$ and $a_{ji}$ values, but their order is randomised according to certain rules. After this, the function *assemble_jacobian()* builds the community matrix using the order of species from the empirical matrix but with the interaction strengths from the randomised columns. 
 
+ 
 A manipulation procedure can be defined with the following template: 
 
 ```{r, eval = FALSE}
@@ -54,7 +55,6 @@ randomize_xy <- function(df, ij_col, ji_col){
   #(intraspecific interactions are not randomized)
   df_inter <-  df[df$Species_i != df$Species_j,]
   n = length(df_inter$Species_i)
-  
   
   #create a new vector, in which the order of interaction strengths is changed
   #according to some rule
@@ -75,21 +75,22 @@ randomize_xy <- function(df, ij_col, ji_col){
 
 The following types of randomisation procedures are currently used to disentangle the role of asymmetry in pairwise interactions from community level asymmetry (see man pages for details on the functions):
  
- * **Full randomization**: All interspecific interactions strengths are randomly assigned a new position in the matrix. During this procedure all feedback loops of lengths $>1$ are destroyed and with that both pairwise as well as community asymmetry
- * **Pairwise randomization**: Pairs of interactions strengths (the rows of the interaction table) are kept the same but the position of pairs within the network is reassigned. 2-link loops, and with that pairwise asymmetry are preserved. All structures associated with longer loops, like community asymmetry are destroyed. 
+ * **Full randomisation** (randomize_all()): All interspecific interactions strengths are randomly assigned a new position in the matrix. During this procedure all feedback loops of lengths $>1$ are destroyed and with that both pairwise as well as community asymmetry
+ * **Weak randomisation** (randomize_pw()): Pairs of interactions strengths (the rows of the interaction table) are kept the same but the position of pairs within the network is reassigned. 2-link loops, and with that pairwise asymmetry are preserved. All structures associated with longer loops, like community asymmetry are destroyed.
+ * **Minimal randomisation** (randomize_minimal()): Pairs of interaction strengths as well as their above-below diagonal orientation are preserved. This preserves both pairwise as well as community asymmetry. 
  
 In addition, we use two procedures to artificially reconstruct pairwise and community asymmetry in randomised matrices: 
 
-* **Pairwise asymmetry**: Reshuffles all elements to create a matrix that is as pairwise asymmetric as possible. To do this, all links are first sorted by their magnitude. Then, the very largest link is paired with the smallest, the second largest with the second smallest, etc. The pairs are then assigned a random position in the network, so that there is no community asymmetry
+* **Maximising pairwise asymmetry** (randomize_asymmetric()): Reshuffles all elements to create a matrix that is as pairwise asymmetric as possible. To do this, all links are first sorted by their magnitude. Then, the very largest link is paired with the smallest, the second largest with the second smallest, etc. The pairs are then assigned a random position in the network, so that there is no community asymmetry
 
-* **Pairwise + community asymmetry**: In addition to maximising pairwise asymmetry, this procedure also creates community asymmetry by sorting all stronger links on one side of the matrix diagonal (one column of the interaction table) and all weaker links on the other side (other column of the interaction table).
+* **Maximising pairwise & community asymmetry** (randomize_asymmetric_hierarchical()): In addition to maximising pairwise asymmetry, this procedure also creates community asymmetry by sorting all stronger links on one side of the matrix diagonal (one column of the interaction table) and all weaker links on the other side (other column of the interaction table).
 
 In all procedures, the diagonals are left untouched. Also, the topology of the network is preserved so that species that do not interact in the original network also do not interact in the randomised ones. 
 
 
 ### Apply randomisation functions to a network
 
-The randomisation functions are used to randomise the order of interaction strengths within the interaction table. 
+The randomisation functions are used to reshuffle interaction strengths within the interaction table. 
 
 ```{r}
 interaction_table <- interaction_table %>% 
@@ -99,7 +100,7 @@ interaction_table <- interaction_table %>%
 head(interaction_table)
 ```
 
-Four additional columns are added to the interaction table: In *a_ij_rand* and *a_ji_rand* all non-zero interaction strengths have been reordered. In *a_ij_pw* and *a_ji_pw* pairs of links (those in the same row) are still the same in the original matrix but the order of rows has been randomised as well as whether the value belongs to the *a_ij* or *a_ji* column- meaning that values can be exchanged from below to above the diagonal and vice-versa. 
+Four additional columns have been added to the interaction table: In *a_ij_rand* and *a_ji_rand* all non-zero interaction strengths have been reordered. In *a_ij_pw* and *a_ji_pw* pairs of links (those in the same row) are still the same in the original matrix but the order of rows has been randomised as well as whether the value belongs to the *a_ij* or *a_ji* column- meaning that values can be exchanged from below to above the diagonal and vice-versa. 
 
 To build randomised community matrices, assemble_jacobian() is used. It needs the interaction_table as well as the list of species as inputs. We also need to specific which columns of the interaction table should be used to fill the matrix above the diagonal (ij_col) and which to fill below the diagonal (ji_col). 
 
@@ -131,7 +132,7 @@ To analyse the effect of destroying certain structures of a network, we have to 
 ```{r}
 analyse_jacobian <- function(Jacobian,site_name, type, replacement = 0.1){
   
-  "Analyses the property of one community matrix"
+  #Analyses the property of one community matrix
   
   #calculate 2-link loops
   l2_weights <- loops(2, Jacobian)$loop_weight
@@ -168,10 +169,10 @@ analyse_jacobian <- function(Jacobian,site_name, type, replacement = 0.1){
 Then the analyse_jacobian() function can be called repeatedly for each randomised matrix and the single-row data-frames can be combined into one large table containing all randomisation results: 
 
 ```{r}
-randomise <- function(interaction_table, species_list, site_name, iterations, mean_aij){
+randomise <- function(interaction_table, species_list, site_name, iterations){
   
-  "Defines which randomisations should be applied to a network and how many times 
-  it should be repeated"
+  #Defines which randomisations should be applied to a network and how many times 
+  #it should be repeated
   
   cat("Randomization of:", site_name, "\n")
   tictoc::tic("Time:")
@@ -198,10 +199,15 @@ randomise <- function(interaction_table, species_list, site_name, iterations, me
 }
 ```
 
+To repeatedly randomise a single matrix: 
 ```{r}
-results <- randomise(interaction_table, abundance[,1], "Signy_1", 20)
+results <- randomise(interaction_table = interaction_table,
+                     species_list = abundance[,1], 
+                     site_name= "Signy_1", 
+                     iterations = 20)
 head(results)
 ```
+
 To repeat this analysis for a set of networks, combine all interaction_tables in a list and apply the randomise() function to each element of the list, e.g. with purrr:map_dfr() (see example scripts)
 
 ```{r, eval = FALSE}
