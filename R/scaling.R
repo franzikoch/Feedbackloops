@@ -5,9 +5,11 @@ usethis::use_package("dplyr")
 
 #'Replace missing diagonal values 
 #'
-#'The Scaling procedure as well as the calculation of s* only work when all 
-#'diagonal values are != 0. Therefore, missing values need to be replaced.
-#'The replacement value is calculated as the mean strengths of all off-diagonal 
+#'The scaling procedure as well as the calculation of s* require that all 
+#'diagonal values $a_{ii} != 0$. Therefore, missing values need to be replaced by
+#'some small value.
+#'
+#'This replacement value is calculated as the mean strengths of all off-diagonal 
 #'matrix elements, mutltiplied with a factor f.
 #'
 #'@param Jac A Jacobian matrix
@@ -39,11 +41,15 @@ replace_zeros <- function(Jac, f){
 }
 
 
-#'Scales interaction strengths within a Jacobian matrix
+#' Scale interaction strengths within a Jacobian matrix
 #'
-#'Following Neutel and Thorne 2016, the scaling is done by dividing off-diagonal
-#'elements by the diagonal element. This does not work if there is a 0 on the 
-#'diagonal ! First, replace missing elements with replace_zeros(). 
+#' Off-diagonal values are scaled by dividing them by the absolute value of 
+#' their corresponding diagonal element. The resulting scaled interaction strengths
+#' are thus defined as: \eqn{\bar{a_{ij}} = \frac{a_{ij}}{|a_{ii}|}} (Neutel and Thorne
+#' 2016).
+#' 
+#' This does not work if there is a 0 on the diagonal ! Replace missing elements
+#' with replace_zeros() before scaling !. 
 #'
 #'@param A A Jacobian matrix, with non-zero diagonal elements
 #'@param aii determines the value of diagonal elements 
@@ -70,12 +76,16 @@ scale_matrix <- function(A, aii = 0){
 }
 
 #' Scale interaction strengths within an interaction table
+#'
+#' Off-diagonal values are scaled by dividing them by the absolute value of 
+#' their corresponding diagonal element. The resulting scaled interaction strengths
+#' are thus defined as: \eqn{\bar{a_{ij}} = \frac{a_{ij}}{|a_{ii}|}} (Neutel and Thorne
+#' 2016).  
 #' 
-#' Following Neutel and Thorne 2016, the scaling is done by dividing off-diagonal
-#' elements by the diagonal element. For each pairwise interaction, the function 
-#' identifies the corresponding self-regulation term needed to scale an interspecific 
-#' interaction strength. If the self-regulation value is missing, it is replaced
-#' by the mean interaction strength multiplied  with a factor. 
+#' For each pairwise interaction, the function identifies the corresponding 
+#' self-regulation term needed to scale an interspecific interaction strength.
+#' If the self-regulation value is missing, it is replaced by the mean 
+#' interaction strength multiplied  with a specified factor. 
 #' 
 #' @param interaction_table table of pairwise interactions
 #' @param r_factor factor that is mulitplied with the mean interaction strength 

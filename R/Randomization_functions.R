@@ -2,24 +2,21 @@
 #' Full randomisation of an interaction table 
 #' 
 #' During the full randomisation procedure, ALL interspecific interaction strengths are randomly 
-#' reshuffled within the network. Intraspecific interactions/ Diagonal values are not affected.
-#. Interaction strengths are reshuffled within the interaction table. They are also reshuffled across the two 
-#' interaction columns so that an a_ij value can become an a_ji value and 
-#' vice-versa. The function returns a new interaction table
-#' that contains two columns with randomised interaction strengths.
-#'  
-#' Use this table as inputto assemble_jacobian() and specify the new columns to get a fully randomised Jacobian matrix.
-#' Note: values are only randomised across existing links! (the interaction table 
-#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
-#' the randomised interaction table, the network will have the same topology as
-#' the empirical one. 
+#' reshuffled within the network. Intraspecific interactions, the diagonal matrix elements 
+#' are not affects and network topology is preserved (zeros remain in place). 
+#' 
+#' The function returns a new interaction table that contains two new columns $a_ij_rand and
+#' $a_ji_rand that contains the same values as the original columns but in a different order.
+#' 
+#' To get a fully randomised Jacobian matrix, use assemble_jacobian() and specify
+#' the new columns. 
 #' 
 #' @param df interaction table (created by interaction_strenghts())
-#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
-#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
+#' @param ij_col column of \eqn{a_{ij}} values to randomise (choose scaled or unscaled)
+#' @param ji_col column of \eqn{a_{ji}} values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table but with two additional columns $a_ij_B_rand 
-#' and $a_ji_B_rand that contain the same interaction strengths in a randomised order
+#' @return interaction table with two additional columns *$a_ij_rand* 
+#' and *$a_ji_rand* that contain the interaction strengths in a randomised order
 #' @export
 
 randomize_all <- function(df, ij_col, ji_col){
@@ -59,27 +56,29 @@ randomize_all <- function(df, ij_col, ji_col){
 
 
 
-#' Pairiwise randomisation of an interaction table 
+#' Pairiwise (Weak) randomisation of an interaction table 
 #' 
 #' During pairwise randomisation, pairs of interaction strengths are kept intact but their 
-#' location is reshuffled across the network. In the interaction table this means the following:
-#' a_ij and a_ji values that appear in the same row in the original table, will also be in the same
-#' row in the pairwise randomised table(all though it is possible that they switch columns). 
-#' The function returns a new interaction table that contains two columns with randomised interaction strengths.
+#' location is reshuffled across the network. Intraspecific links and network topology are 
+#' preserved.
 #' 
-#' Use this table as input to assemble_jacobian() and specify the two new columns
-#' to get a pairwise randomised Jacobian matrix.
+#' In the interaction table this means the following: \eqn{a_{ij}} and \eqn{a_{ji}}
+#' values that appear in the same row in the original table, will also be in the same
+#' row in the pairwise randomised table. However, they can switch from  \eqn{a_{ij}} to 
+#' \eqn{a_{ji}} and vice versa, which means above-below diagonal orientation can be 
+#' reversed. 
 #' 
-#' Note: values are only randomised across existing links! (the interaction table 
-#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
-#' the randomised interaction table, the network will have the same topology as
-#' the empirical one!
+#' The function returns a new interaction table that contains two new columns $a_ij_pw and
+#' $a_ji_pw that contains the same values as the original columns but in a different order.
+#' 
+#' To get a pairwise randomised Jacobian matrix, use assemble_jacobian() and specify
+#' the new columns. 
 #' 
 #' @param df interaction table (created by interaction_strenghts())
-#' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
-#' @param ji_col column of a_ji values to randomise (scaled or unscaled)
+#' @param ij_col column of \eqn{a_{ij}} values to randomise (choose scaled or unscaled)
+#' @param ji_col column of \eqn{a_{ji}} values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table with additional columns $a_ij_B_pw and $a_ji_B_pw, 
+#' @return Interaction table with two additional columns *$a_ij_pw* and *$a_ji_pw*, 
 #' containing randomised interaction strengths
 #' 
 #' @export
@@ -133,9 +132,30 @@ randomize_pw <- function(df, ij_col, ji_col){
 
 #' Minimal randomisation procedure
 #' 
-#' In this version, pairs are kept together and their orientation compared to the
-#' matrix diagonal is also preserved. This means that both pairwise as well as
-#' community asymmetry is retained. 
+#' In this version, pairs are kept together and their above-below diagonal orientation 
+#' is also preserved. 
+#' 
+#' In the interaction table this means the following: \eqn{a_{ij}} and \eqn{a_{ji}}
+#' values that appear in the same row in the original table, will also be in the same
+#' row in the pairwise randomised table. In contrast to the pairwise (weak) randomisation, 
+#' they cannot switch from  \eqn{a_{ij}} to \eqn{a_{ji}} or vice versa. Only the order of rows
+#' in the table is randomised. 
+#' 
+#' The function returns a new interaction table that contains two new columns $a_ij_min and
+#' $a_ji_min that contains the same values as the original columns but in a different order.
+#' 
+#' To get a minimally randomised Jacobian matrix, use assemble_jacobian() and specify
+#' the new columns. 
+#' 
+#' @param df interaction table (created by interaction_strenghts())
+#' @param ij_col column of \eqn{a_{ij}} values to randomise (choose scaled or unscaled)
+#' @param ji_col column of \eqn{a_{ji}} values to randomise (scaled or unscaled)
+#' 
+#' @return Interaction table with two additional columns *$a_ij_min* and *$a_ji_min*, 
+#' containing randomised interaction strengths
+#' 
+#' @export
+#' 
 randomize_minimal <- function(df, ij_col, ji_col){
   
   #some defensive programming: 
@@ -186,31 +206,29 @@ randomize_minimal <- function(df, ij_col, ji_col){
 
 
 
-#' Randomise a community matrix to have perfect asymmetry 
+#' Maximise pairwise asymmetry 
 #' 
-#' During the randomisation procedure, all interaction strengths are reordered to 
-#' make the 2-link loops in the randomised system as asymmetric as possible. To do this, 
-#' all links are ordered by size. Then, the very strongest link is paired with the
+#' During this randomisation procedure, all interaction strengths are reordered to 
+#' make the 2-link loops in the randomised system as asymmetric as possible. Diagonal values
+#' and network topology are preserved. 
+#' 
+#' To do this, all links are ordered by size. Then, the very strongest link is paired with the
 #' weakest one, the second strongest with the second weakest etc. The location of 
 #' pairwise interactions in the network is chosen randomly. Also, links are randomised 
 #' between the ij and ji column, so that the strong links can appear both above and below
 #' the diagonal. 
-#'
 #' 
-#' The function returns a new interaction table that contains two columns with randomised interaction strengths,
-#' Use this table as input to assemble_jacobian() and specify the new columns to 
-#' build the Jacobian matrix.
+#' The function returns a new interaction table that contains two new columns $a_ij_asym and
+#' $a_ji_asym that contains the same values as the original columns but in a different order.
 #' 
-#' Note: values are only randomised across existing links! (the interaction table 
-#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
-#' the randomised interaction table, the network will have the same topology as
-#' the empirical one!
+#' To get a Jacobian matrix with maximised pairwise asymmetry, use assemble_jacobian() and specify
+#' the new columns. 
 #' 
 #' @param it interaction table (created by interaction_strengths())
 #' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
 #' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table with additional columns $a_ij_asym and $a_ji_asym, 
+#' @return Interaction table with two additional columns *$a_ij_asym* and *$a_ji_asym*, 
 #' containing randomised interaction strengths
 #' 
 #' @export
@@ -275,31 +293,31 @@ randomize_asymmetric <- function(it, ij_col, ji_col){
 }
 
 
-#' Randomise a community matrix to have perfect asymmetry and hierarchy
+#' Maximise pairwise and community asymmetry 
 #' 
-#' During the randomisation procedure, all interaction strengths are reordered to 
+#' During this randomisation procedure, all interaction strengths are reordered to 
 #' make the 2-link loops in the randomised system as asymmetric as possible. To do this, 
 #' all links are ordered by size. Then, the very strongest link is paired with the
 #' weakest one, the second strongest with the second weakest etc. The location of 
-#' pairwise interactions in the network is chosen randomly. The stronger link of each 
-#' interaction is placed below the diagonal of the matrix, while all weaker links are
-#' placed above the diagonal. This makes sure that the matrix is also perfectly hierarchical, 
-#' meaning the the weight of all loops > 2 is reduced as well. 
+#' pairwise interactions in the network is chosen randomly (but network topology 
+#' is preserved- off-diagonal zeros remain in place).
 #' 
-#' The function returns a new interaction table that contains two columns with randomised interaction strengths,
-#' Use this table as input to assemble_jacobian() and specify the new columns to 
-#' build the Jacobian matrix.
+#' To also maximise community asymmetry, the stronger link of each interaction 
+#' is placed below the diagonal of the matrix (aji column), while all weaker links
+#' are placed above the diagonal (aji column).  
 #' 
-#' Note: values are only randomised across existing links! (the interaction table 
-#' does not contain non-existent links). Thus, if the Jacobian is reconstructed from 
-#' the randomised interaction table, the network will have the same topology as
-#' the empirical one!
+#' The function returns a new interaction table that contains two new columns 
+#' *$a_ij_asym_h* and *$a_ji_asym_h* that contains the same values as the original 
+#' columns but in a different order.
+#' 
+#' To get a Jacobian matrix with maximised pairwise asymmetry, use assemble_jacobian() and specify
+#' the new columns. 
 #' 
 #' @param it interaction table (created by interaction_strengths())
 #' @param ij_col column of a_ij values to randomise (choose scaled or unscaled)
 #' @param ji_col column of a_ji values to randomise (scaled or unscaled)
 #' 
-#' @return the same interaction table with additional columns $a_ij_asym_h and $a_ji_asym_h, 
+#' @return Interaction table with additional columns *$a_ij_asym_h* and *$a_ji_asym_h*, 
 #' containing randomised interaction strengths
 #' 
 #' @export

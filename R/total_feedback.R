@@ -1,4 +1,4 @@
-#'Calculates total feedback at a given level k
+#'Calculates total feedback at a given level *k*
 #'
 #'F_k is calculated via the coefficients of the characteristic polynomial 
 #'

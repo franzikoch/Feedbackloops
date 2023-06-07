@@ -1,17 +1,19 @@
 #Functions to calculate loop strengths and weights
 
 
-#' Calculates the loop strength and weight of a given feedback loop
+#' Calculate the loop strength and weight of a given feedback loop
+#' 
+#' Used internally by loops(). 
 #' 
 #' A loop is defined by a list of species e.g. c(1,2,3) is the 3-link loop 1 -> 2 -> 3
 #' these species numbers are used as indices in order to pick the corresponding 
-#' interaction strengths from the Jacobian A
+#' interaction strengths from the Jacobian \eqn{\mathbf{A}}
 #' 
 #' @param loop a vector containing the species that are in the loop, e.g. c(1,2,3) 
 #' for the 3-link loop 1 -> 2 -> 3
-#' @param A a Jacobian matrix
+#' @param A A Jacobian matrix
 #' 
-#' @return a vector containing the loop strength and the loop weight 
+#' @return A vector containing the loop strength and the loop weight 
 #' 
 #' 
 loop_weight <- function(loop, A){
@@ -43,11 +45,14 @@ loop_weight <- function(loop, A){
 }
 
 
-#'Calculates the strengths and weights of all loops of length n within the matrix A 
+#' Calculate the strengths and weights of all loops of length *n* within the matrix *A* 
 #'
-#'To do this, I simply assume that all possible loops of length n (all possible combinations of n-species) exist. 
-#'Then, the function goes through all possible loops and calculates their strengths using loop_weights()
-#'If the loop weight is 0, at least one of the links is missing and the loop is removed from the list.
+#' To do this, I simply assume that all possible loops of length n (all possible 
+#' combinations of n-species) exist. Then, the function goes through all possible
+#' loops and calculates their strengths using loop_weights().
+#' 
+#' If the loop weight is 0, at least one of the links is missing and the loop
+#' is removed from the list.
 #'
 #'@param n loop length
 #'@param A a Jacobian matrix in which all loops of length should be identified
@@ -112,7 +117,7 @@ loops <- function(n, A){
 }
 
 
-#'Calculates the strengths and weights of all loops of length n within the matrix A
+#'Calculates the strengths and weights of all loops of length *n* within the matrix *A*
 #'
 #'Same function as loops() but calculations can be run on multiple cores
 #'(setup of parallel backend only works on Linux!!!)

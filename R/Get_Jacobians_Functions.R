@@ -2,21 +2,23 @@
 #by calculating interaction strengths from species-contact matrices and abundances
 
 
-#' Reads in the raw data files and returns data frames that are more easy to work with in R.
+#' Read in the raw data files
 #'
 #'
 #' Competition and abundance data must be read in together, to make sure that species match.
-#' (in Daves raw data tables, the abundance data sometimes contains species that are not in
-#' the species contact matrix)
+#' Some species may appear in the abundance table but not in the species contact matrix, 
+#' because they do not interact with anyone yet). These species are dropped from the list. 
+#' Species in the abundance table are also reordered to match the order of species
+#' in the species contact matrix.
 #'
 #' @param path_competition path to species contact matrix .csv file
 #' @param path_abundance path to abundance .csv file
 #' 
-#' @return A list containing a competition data frame, that contains the
-#' species contact matrix and a cleaned abundance table (missing species are omitted +
-#' same order as competition table)
-#'
+#' @return A list containing two data frames: the
+#' species contact matrix and a cleaned abundance table 
+#' 
 #'@export
+#'
 read_data <- function(path_competition, path_abundance){
 
   #load competition csv file
@@ -73,28 +75,18 @@ read_data <- function(path_competition, path_abundance){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-#' Calculates interaction_strengths from species_contact matrix
+#' Calculate interaction strengths
 #'
-#' In a first step, the species-contact matrix is turned into a tabular
-#' format with one row per pairwise interaction in order to make computations easier. Then,
-#' biomass loss rates are calculated with a given list of cost-values. Biomass loss rates are then
-#' converted to interaction strengths by diving them by the respective species' abundance.
+#' Turns the species-contact matrix into a tabular format with one row per 
+#' pairwise interaction. Biomass loss rates are calculated with a given list 
+#' of cost-values. Interaction strengths are calculated by dividing biomass loss
+#' rate \eqn{B_{ij}} by the abundance of species \eqn{B_j}. 
+#' 
 #' @param competition species-contact matrix
 #' @param abundance abundance table
 #' @param cost_list list containing win_cost, loss_cost, draw_cost
 #'
-#'
-#' @return table containing biomass loss rates and interaction strenghts
+#' @return A dataframe containing biomass loss rates and interaction strengths
 #'
 #' @export 
 #' 
@@ -196,18 +188,21 @@ interaction_strengths <- function(competition, abundance, cost_list){
   return(df)
 }
 
-#' Constructs a community matrix from the data.frame created by the interaction_strengths function
+#' Construct a community matrix
 #'
-#' To do this, the list of species names from the abundance table is used to name the rows and columns
-#' of the community matrix. The corresponding interaction strengths are picked from the dataframe, based on
-#' the species name.
+#' Turns interaction strengths from the tabular format (output of *interaction_strengths()*) 
+#' into a community matrix. 
+#' 
+#' To do this, species names from the abundance table is used to name the 
+#' rows and columns of the matrix. The corresponding interaction strengths 
+#' are then picked from the dataframe, based on the species name.
 #'
-#' @param interaction_table the dataframe created by the interaction strengths function
+#' @param interaction_table dataframe created by the interaction strengths function
 #' @param species_list list of species names in the community, can be taken from the abundance table
 #' @param ij_col name of the column that contains effects of species i on species j
 #' @param ji_col name of the column that contains effects of species j on species j 
 #'
-#' @return The community matrix 
+#' @return A community matrix 
 #'
 #' @export 
 #' 
