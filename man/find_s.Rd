@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_s.R
 \name{find_s}
 \alias{find_s}
-\title{Find the relative amount of self-regulation needed for stability \emph{s\}*}
+\title{Find the relative amount of self-regulation needed for stability s*}
 \usage{
 find_s(Jacobian, step_size = 0.01, start_s = 1, max_s = 1000)
 }

@@ -1,6 +1,6 @@
 usethis::use_pipe(export = TRUE)
 
-#'Find the relative amount of self-regulation needed for stability *s\**
+#'Find the relative amount of self-regulation needed for stability s*
 #'
 #'For unstable matrices, diagonal values are incrementally increased by multiplying it 
 #'with a factor *s*, until its dominant eigenvalue becomes negative (=the matrix becomes stable). 
@@ -82,7 +82,7 @@ find_s <- function(Jacobian, step_size = 0.01, start_s = 1, max_s = 1000){
 #'Diagonal values are incrementally increases by a factor s until all total feedback 
 #'values (calculated via the coefficients of the characteristic polynomial). 
 #'This will not work, if the diagonal contains zeros. 
-#'Replace missing values before calculating *s\**!
+#'Replace missing values before calculating s*!
 #'
 #'@param Jacobian A Jacobian matrix
 #'@param step_size Amount by which s is increases in each step 

@@ -18,5 +18,5 @@ find_s_F(Jacobian, step_size = 0.01, max_s = 1000)
 Diagonal values are incrementally increases by a factor s until all total feedback
 values (calculated via the coefficients of the characteristic polynomial).
 This will not work, if the diagonal contains zeros.
-Replace missing values before calculating *s\**!
+Replace missing values before calculating s*!
 }
